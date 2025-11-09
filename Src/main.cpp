@@ -2,10 +2,22 @@
 //
 
 #include <iostream>
+#include <fstream>
+#include "AssetManager/AssetManager.h"
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	AssetManager mgr;
+	mgr.DeleteAllMetaFiles();
+	mgr.CreateMetaFileForAllFiles();
+	mgr.CreateAddressablesList();
+
+	std::string path = mgr.GetFilePathFromAddressableName("addName");
+	std::ifstream ifs(path);
+	if (ifs.fail() == false)
+	{
+		std::cout << "AddressableNameでファイルが読み込めた！" << std::endl;
+	}
 }
 
 // プログラムの実行: Ctrl + F5 または [デバッグ] > [デバッグなしで開始] メニュー

@@ -7,15 +7,30 @@
     <Filter Include="Src\GUID">
       <UniqueIdentifier>{778228f9-73b0-4be1-86dd-3d6ff73a92bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\nlohmann">
+      <UniqueIdentifier>{94e42e01-c2b3-46c6-97cb-878e4bbffac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\AssetManager">
+      <UniqueIdentifier>{6ef978c9-a986-47fa-b9b0-3a80812faf25}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\main.cpp">
       <Filter>Src</Filter>
     </ClCompile>
+    <ClCompile Include="Src\AssetManager\AssetManager.cpp">
+      <Filter>Src\AssetManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\GUID\Guid.h">
       <Filter>Src\GUID</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\nlohmann\json.hpp">
+      <Filter>Src\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\AssetManager\AssetManager.h">
+      <Filter>Src\AssetManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
