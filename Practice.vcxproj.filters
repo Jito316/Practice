@@ -13,6 +13,9 @@
     <Filter Include="Src\AssetManager">
       <UniqueIdentifier>{6ef978c9-a986-47fa-b9b0-3a80812faf25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application">
+      <UniqueIdentifier>{2faa60fc-f6ea-4aec-9496-df8ebaf25f25}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\main.cpp">
@@ -20,6 +23,9 @@
     </ClCompile>
     <ClCompile Include="Src\AssetManager\AssetManager.cpp">
       <Filter>Src\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Application.cpp">
+      <Filter>Src\Application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="Src\AssetManager\AssetManager.h">
       <Filter>Src\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Application.h">
+      <Filter>Src\Application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

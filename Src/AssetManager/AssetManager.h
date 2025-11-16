@@ -19,8 +19,7 @@ public:
 
 	// Metaファイルを探してApplicationで使用するリストを作成する
 	void CreateAddressablesList();
-	// AddressableNameを指定してファイルパスの作成
-	std::string GetFilePathFromAddressableName(const std::string& addressableName);
+
 	// Assetsフォルダ以下をクロールして、Metaファイルを更新していく
 	void CreateMetaFileForAllFiles();
 
@@ -30,11 +29,15 @@ public:
 	// 作成したMetaファイルを全部削除
 	void DeleteAllMetaFiles();
 
+	// AddressableNameを指定してファイルパスの作成
+	std::string GetFilePathFromAddressableName(const std::string& addressableName);
 
 	// 固定のファイルパスやらファイル名やら
 	std::string _assetFilePass = "./Assets/";   // Assetファイルの先頭ディレクトリ
 	std::string _metaFileExtentionName = ".kdfwmeta"; // 作成するメタファイルの拡張子
 	std::string _logFileName = "AssetManager.log";  // Log保存場所
+
+	const std::unordered_map<std::string, MetaData>& GetLibrary() const { return  _addressables; }
 
 private:
 	// 対応する拡張子

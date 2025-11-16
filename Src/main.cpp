@@ -3,30 +3,58 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <thread>
+#include <Windows.h>
+#include "Application/Application.h"
 #include "AssetManager/AssetManager.h"
+
+void print_datetime(const char* name, std::filesystem::file_time_type tp)
+{
+	// local_timeは、システム時間のエポックからの経過時間によって構築できる
+	auto temp = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch());
+	std::cout << name << "\t: " << tp << std::endl;
+}
+
+
+void FileUpdate()
+{
+	while (!Application::Instance().IsEnd())
+	{
+		std::cout << "ファイル監視" << std::endl;
+		auto& mgr = *Application::Instance().GetAssetManager();
+		auto& library = mgr.GetLibrary();
+
+		for (auto& [ID, Path] : library)
+		{
+			std::filesystem::file_time_type temp = std::filesystem::last_write_time(Path.filePath);
+			print_datetime(Path.filePath.c_str(), temp);
+		}
+
+		Application::Instance().End();
+	}
+}
 
 int main()
 {
-	AssetManager mgr;
-	mgr.DeleteAllMetaFiles();
-	mgr.CreateMetaFileForAllFiles();
-	mgr.CreateAddressablesList();
+	std::thread thread(FileUpdate);
+	while (!Application::Instance().IsEnd())
+	{
+		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+		{
+			Application::Instance().End();
+		}
+	}
+	thread.join();
 
+	/*
 	std::string path = mgr.GetFilePathFromAddressableName("addName");
 	std::ifstream ifs(path);
 	if (ifs.fail() == false)
 	{
 		std::cout << "AddressableNameでファイルが読み込めた！" << std::endl;
 	}
+	*/
 }
-
-// プログラムの実行: Ctrl + F5 または [デバッグ] > [デバッグなしで開始] メニュー
-// プログラムのデバッグ: F5 または [デバッグ] > [デバッグの開始] メニュー
-
-// 作業を開始するためのヒント: 
-//    1. ソリューション エクスプローラー ウィンドウを使用してファイルを追加/管理します 
-//   2. チーム エクスプローラー ウィンドウを使用してソース管理に接続します
-//   3. 出力ウィンドウを使用して、ビルド出力とその他のメッセージを表示します
-//   4. エラー一覧ウィンドウを使用してエラーを表示します
-//   5. [プロジェクト] > [新しい項目の追加] と移動して新しいコード ファイルを作成するか、[プロジェクト] > [既存の項目の追加] と移動して既存のコード ファイルをプロジェクトに追加します
-//   6. 後ほどこのプロジェクトを再び開く場合、[ファイル] > [開く] > [プロジェクト] と移動して .sln ファイルを選択します
