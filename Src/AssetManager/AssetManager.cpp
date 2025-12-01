@@ -1,4 +1,7 @@
 ﻿#include "AssetManager.h"
+#include <iostream>
+#include <Windows.h>
+#include "Application/Application.h"
 
 // Metaファイルを探してAddressablesListを作成する
 void AssetManager::CreateAddressablesList()
@@ -28,6 +31,7 @@ void AssetManager::CreateAddressablesList()
 			// メタデータから参照ファイル情報の作成
 			MetaData metaData;
 			metaData.filePath = filePath;
+			metaData.writeTime  = std::chrono::duration_cast<std::chrono::seconds>(std::filesystem::last_write_time(filePath).time_since_epoch()).count();
 
 			// Addressableの被りは許さず
 			if (_addressables.find(addressable) != _addressables.end())
@@ -96,6 +100,40 @@ bool AssetManager::IsSupportedFile(const std::filesystem::path& filePath)
 		if (filePath.extension().string() == ext) { return true; }
 	}
 	return false;
+}
+
+void AssetManager::FileUpdate()
+{
+	bool isPress = false;
+	while (!Application::Instance().IsEnd())
+	{
+		if (GetAsyncKeyState('U') & 0x8000)
+		{
+			if (isPress)continue;
+			isPress = true;
+		}
+		else 
+		{
+			isPress = false;
+			continue;
+		}
+
+		std::cout << "ファイル監視" << std::endl;
+		for (auto& [id, data] : _addressables)
+		{
+			std::filesystem::file_time_type tp = std::filesystem::last_write_time(data.filePath);
+			auto writeTime = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
+
+			if (data.writeTime != writeTime) 
+			{
+				data.writeTime = writeTime;
+				for (auto& it : m_fileWriteEvents) 
+				{
+					it->OnWrite(data.filePath);
+				}
+			}
+		}
+	}
 }
 
 // 渡されたファイルに対してMetaファイルを作成する

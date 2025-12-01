@@ -11,35 +11,9 @@
 #include "Application/Application.h"
 #include "AssetManager/AssetManager.h"
 
-void print_datetime(const char* name, std::filesystem::file_time_type tp)
-{
-	// local_timeは、システム時間のエポックからの経過時間によって構築できる
-	auto temp = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch());
-	std::cout << name << "\t: " << tp << std::endl;
-}
-
-
-void FileUpdate()
-{
-	while (!Application::Instance().IsEnd())
-	{
-		std::cout << "ファイル監視" << std::endl;
-		auto& mgr = *Application::Instance().GetAssetManager();
-		auto& library = mgr.GetLibrary();
-
-		for (auto& [ID, Path] : library)
-		{
-			std::filesystem::file_time_type temp = std::filesystem::last_write_time(Path.filePath);
-			print_datetime(Path.filePath.c_str(), temp);
-		}
-
-		Application::Instance().End();
-	}
-}
-
 int main()
 {
-	std::thread thread(FileUpdate);
+	
 	while (!Application::Instance().IsEnd())
 	{
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
@@ -47,7 +21,6 @@ int main()
 			Application::Instance().End();
 		}
 	}
-	thread.join();
 
 	/*
 	std::string path = mgr.GetFilePathFromAddressableName("addName");
