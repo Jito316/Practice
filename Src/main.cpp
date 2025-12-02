@@ -11,9 +11,11 @@
 #include "Application/Application.h"
 #include "AssetManager/AssetManager.h"
 
+#include "ICommand.h"
+
 int main()
 {
-	
+	ICommand* command = nullptr;
 	while (!Application::Instance().IsEnd())
 	{
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
@@ -21,13 +23,4 @@ int main()
 			Application::Instance().End();
 		}
 	}
-
-	/*
-	std::string path = mgr.GetFilePathFromAddressableName("addName");
-	std::ifstream ifs(path);
-	if (ifs.fail() == false)
-	{
-		std::cout << "AddressableNameでファイルが読み込めた！" << std::endl;
-	}
-	*/
 }
