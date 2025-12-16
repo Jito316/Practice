@@ -13,6 +13,11 @@ public:
 	{
 		NewGuid();
 	}
+	
+	Guid(const std::string& strGuid)
+	{
+		FromString(strGuid);
+	}
 
 	// V‚µ‚¢GUID‚ğì¬‚·‚é
 	void NewGuid()
@@ -36,10 +41,7 @@ public:
 
 	void FromString(const std::string& strGuid)
 	{
-		if (UuidFromStringA((RPC_CSTR)strGuid.c_str(), &m_guid) != RPC_S_OK) 
-		{
-		
-		}
+		std::ignore = UuidFromStringA((RPC_CSTR)strGuid.c_str(), &m_guid);
 	}
 
 private:

@@ -11,8 +11,6 @@
 // json
 #include <nlohmann/json.hpp>
 
-#include "GUID/Guid.h"
-
 class AssetManager
 {
 public:
@@ -22,14 +20,13 @@ public:
 	struct MetaData
 	{
 		std::string filePath;
-		Guid guid;
 		long long writeTime = 0;
 	};
 
-	class IFileWriteHandler
+	class IFileWriteEvent 
 	{
 	public:
-		virtual void OnWrite(const MetaData&) = 0;
+		virtual void OnWrite(const std::filesystem::path&) = 0;
 	};
 
 	// Metaファイルを探してApplicationで使用するリストを作成する
@@ -53,19 +50,20 @@ public:
 	std::string _logFileName = "AssetManager.log";  // Log保存場所
 
 	const std::unordered_map<std::string, MetaData>& GetLibrary() const { return  _addressables; }
-	void AddListener(std::shared_ptr<IFileWriteHandler> _event) { m_fileWriteEvents.push_back(_event); }
+	void AddListener(std::shared_ptr<IFileWriteEvent> _event) { m_fileWriteEvents.push_back(_event); }
 
 private:
-	// サポートしているファイル形式か確認する
-	bool IsSupportedFile(const std::filesystem::path& filePath);
-
-	void FileUpdate();
-	std::thread m_thread;
-
 	// 対応する拡張子
 	std::list<std::string> _supportedExtensions;
 	// AddressableNameとメタ情報のリスト
 	std::unordered_map<std::string, MetaData> _addressables;
-	// ファイルの書き込み時に発行されるイベント
-	std::list<std::shared_ptr<IFileWriteHandler>> m_fileWriteEvents;
+
+	std::string AddressableName(const std::filesystem::path& srcFile) const;
+	// サポートしているファイル形式か確認する
+	bool IsSupportedFile(const std::filesystem::path& filePath);
+
+	std::thread m_thread;
+	void FileUpdate();
+
+	std::list<std::shared_ptr<IFileWriteEvent>> m_fileWriteEvents;
 };

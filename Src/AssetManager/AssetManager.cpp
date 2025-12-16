@@ -1,6 +1,5 @@
 ﻿#include "AssetManager.h"
 #include <iostream>
-#include <Windows.h>
 #include "Application/Application.h"
 
 // Metaファイルを探してAddressablesListを作成する
@@ -18,7 +17,8 @@ void AssetManager::CreateAddressablesList()
 			meta >> j;
 
 			// AddressableName
-			std::string addressable = j["AddressableName"];
+			std::string addressable_string = j["AddressableName"];
+			Guid addressable(addressable_string);
 
 			// 今回実行時のファイルパスの作成
 			std::string filePath = j["SourceFile"];
@@ -31,17 +31,18 @@ void AssetManager::CreateAddressablesList()
 			// メタデータから参照ファイル情報の作成
 			MetaData metaData;
 			metaData.filePath = filePath;
+			metaData.guid = addressable;
 			metaData.writeTime  = std::chrono::duration_cast<std::chrono::seconds>(std::filesystem::last_write_time(filePath).time_since_epoch()).count();
 
 			// Addressableの被りは許さず
-			if (_addressables.find(addressable) != _addressables.end())
+			if (_addressables.find(addressable_string) != _addressables.end())
 			{
-				log << "error! : " << addressable << " This AddressableName is Conflict!" << " filePath : " << metaData.filePath << std::endl;
+				log << "error! : " << addressable_string << " This AddressableName is Conflict!" << " filePath : " << metaData.filePath << std::endl;
 				assert(0 && "AddressableNameが被っています！！ Logファイルを参照して下さい");
 			}
 
 			// AddressableNameをキーにしてデータを覚えておく
-			_addressables[addressable] = metaData;
+			_addressables[addressable_string] = metaData;
 		}
 	}
 }
@@ -49,7 +50,8 @@ void AssetManager::CreateAddressablesList()
 // AddressableNameからファイルパス取得
 std::string AssetManager::GetFilePathFromAddressableName(const std::string& addressableName)
 {
-	if (_addressables.find(addressableName) == _addressables.end())
+	auto it = _addressables.find(addressableName);
+	if (it == _addressables.end())
 	{
 		assert(0 && "指定されたAddressableNameが見つかりません！");
 	}
@@ -129,7 +131,7 @@ void AssetManager::FileUpdate()
 				data.writeTime = writeTime;
 				for (auto& it : m_fileWriteEvents) 
 				{
-					it->OnWrite(data.filePath);
+					it->OnWrite(data);
 				}
 			}
 		}
@@ -141,7 +143,7 @@ nlohmann::json AssetManager::CreateMetaFileForFile(const std::filesystem::path& 
 {
 	nlohmann::json j;
 	j["SourceFile"] = srcFile.filename().string();
-	j["AddressableName"] = AddressableName(srcFile);
+	j["AddressableName"] = Guid().ToString();
 	return j;
 }
 
@@ -163,20 +165,4 @@ void AssetManager::DeleteAllMetaFiles()
 			log << "Delete Mata File! " << entry.path().string() << std::endl;
 		}
 	}
-}
-
-// AddressableName作成
-std::string AssetManager::AddressableName(const std::filesystem::path& srcFile) const
-{
-	auto filename = srcFile.filename().string();
-
-	// AddreassableNameの指定が有るか
-	auto at = filename.find("@");
-	if (at != std::string::npos)
-	{
-		auto dot = filename.find(".");
-		return filename.substr(at + 1, dot - at - 1);
-	}
-	// Addressableが指定されていない場合、ファイルパスをそのまま
-	return srcFile.relative_path().string();
 }

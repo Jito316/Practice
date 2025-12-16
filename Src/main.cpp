@@ -7,15 +7,17 @@
 #include <ctime>
 #include <iomanip>
 #include <thread>
-#include <Windows.h>
 #include "Application/Application.h"
 #include "AssetManager/AssetManager.h"
+#include "DllLoader/DllLoader.h"
 
-#include "ICommand.h"
+//#include "ICommand.h"
 
 int main()
 {
-	ICommand* command = nullptr;
+	DllLoader dllLoader;
+	//ICommand* command = nullptr;
+
 	while (!Application::Instance().IsEnd())
 	{
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)

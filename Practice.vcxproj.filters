@@ -16,6 +16,15 @@
     <Filter Include="Src\Application">
       <UniqueIdentifier>{2faa60fc-f6ea-4aec-9496-df8ebaf25f25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\DllLoader">
+      <UniqueIdentifier>{84a226e8-ec91-484b-84f2-447f407d7789}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\HotReloader">
+      <UniqueIdentifier>{ee025f28-63f1-46d3-967c-ed514ee55e18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\SerializeField">
+      <UniqueIdentifier>{70583a5c-12c7-49ad-96d0-7e74f602c3a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\main.cpp">
@@ -26,6 +35,15 @@
     </ClCompile>
     <ClCompile Include="Src\Application\Application.cpp">
       <Filter>Src\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\DllLoader\DllLoader.cpp">
+      <Filter>Src\DllLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\pch.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\HotReloader\HotReloader.cpp">
+      <Filter>Src\Application\HotReloader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +58,18 @@
     </ClInclude>
     <ClInclude Include="Src\Application\Application.h">
       <Filter>Src\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\DllLoader\DllLoader.h">
+      <Filter>Src\DllLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\pch.h">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\HotReloader\HotReloader.h">
+      <Filter>Src\Application\HotReloader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\SerializeField\SerializeField.h">
+      <Filter>Src\Application\SerializeField</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

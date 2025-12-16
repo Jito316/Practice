@@ -2,11 +2,11 @@
 #include "AssetManager/AssetManager.h"
 #include <iostream>
 
-class CallbackWirte :public AssetManager::IFileWriteEvent 
+class CallbackWirte :public AssetManager::IFileWriteHandler 
 {
-	void  OnWrite(const std::filesystem::path& _path) 
+	void  OnWrite(const AssetManager::MetaData& _path)
 	{
-		std::cout << "更新：" << _path << std::endl;
+		std::cout << "更新：" << _path.filePath << std::endl;
 	}
 };
 
