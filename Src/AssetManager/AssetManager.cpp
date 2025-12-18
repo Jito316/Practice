@@ -68,7 +68,7 @@ void AssetManager::CreateMetaFileForAllFiles()
 	// 対応するAssetの拡張子を登録→最終的には外部ファイルに吐き出す
 	_supportedExtensions.clear();
 	_supportedExtensions.push_back(".txt");
-	// _supportedExtensions.push_back(".gltf");
+	_supportedExtensions.push_back(".dll");
 	// _supportedExtensions.push_back(".png");
 	// …more
 
@@ -109,16 +109,7 @@ void AssetManager::FileUpdate()
 	bool isPress = false;
 	while (!Application::Instance().IsEnd())
 	{
-		if (GetAsyncKeyState('U') & 0x8000)
-		{
-			if (isPress)continue;
-			isPress = true;
-		}
-		else 
-		{
-			isPress = false;
-			continue;
-		}
+		Sleep(5000);
 
 		std::cout << "ファイル監視" << std::endl;
 		for (auto& [id, data] : _addressables)

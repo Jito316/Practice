@@ -6,8 +6,10 @@
 #define DLLCLIENTAPI __declspec(dllimport)
 #endif
 
-class DLLCLIENTAPI ICommand
+class DLLCLIENTAPI IModule
 {
 public:
-	virtual void Call() = 0;
+	virtual void Initialize() = 0;
+	virtual void Update() = 0;
+	virtual void Finalize() = 0;
 };

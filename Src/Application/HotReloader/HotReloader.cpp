@@ -1,18 +1,92 @@
-﻿#include "HotReloader.h"
+﻿#include <iostream>
+#include <string>
+
+#include "HotReloader.h"
 #include "Application/Application.h"
 #include "AssetManager/AssetManager.h"
 #include "DllLoader/DllLoader.h"
+#include "IModule.h"
 
-struct HotReloader::DllData
+class HotReloader::DllData
 {
+public:
+	typedef IModule* (*CraeteFunction)(void);
+	typedef void(*DeleteFunction)(IModule*&);
+
 	DllData(const AssetManager::MetaData* _pData)
 		:m_metaData(_pData)
 	{
-	
+
 	}
 
+	bool Load()
+	{
+		std::filesystem::path srcFile(m_metaData->filePath);
+		std::filesystem::path copyFile(srcFile.filename().string() + ".copydll");
+		if (!std::filesystem::copy_file(m_metaData->filePath.c_str(), copyFile))
+		{
+			std::cout << "コピー失敗:"<< srcFile.filename() << std::endl;
+			return false;
+		}
+
+		if (m_loader.Load(copyFile.string().c_str()))
+		{
+			if (auto creator = (CraeteFunction)m_loader.GetFunction("CreateInstance"))
+			{
+				m_module = creator();
+
+				m_module->Initialize();
+
+				return true;
+			}
+		}
+
+		std::filesystem::remove(copyFile);
+
+		return false;
+	}
+
+	void Release()
+	{
+		if (m_module)
+		{
+			m_module->Finalize();
+
+			auto deleter = (DeleteFunction)m_loader.GetFunction("DeleteInstance");
+			deleter(m_module);
+		}
+
+		m_loader.Release();
+
+		std::filesystem::path srcFile(m_metaData->filePath);
+		std::filesystem::path copyFile(srcFile.filename().string() + ".copydll");
+		std::filesystem::remove(copyFile);
+	}
+
+	void Update()
+	{
+		if (m_module)
+		{
+			m_module->Update();
+		}
+	}
+
+private:
 	const AssetManager::MetaData* m_metaData;
 	DllLoader m_loader;
+	IModule* m_module = nullptr;
+
+public:
+	bool operator == (const std::filesystem::path& _srcPath)
+	{
+		return m_metaData->filePath == _srcPath;
+	}
+
+	bool operator == (const AssetManager::MetaData* _pData)
+	{
+		return m_metaData == _pData;
+	}
+
 };
 
 class HotReloader::OnDllWriter :public AssetManager::IFileWriteHandler
@@ -24,7 +98,7 @@ private:
 	void OnWrite(const AssetManager::MetaData& _srcFile) override
 	{
 		auto& list = m_owner->m_dllIDList;
-		auto it = std::ranges::find_if(list.begin(), list.end(), [&_srcFile](auto& _it) { return _it->m_metaData == &_srcFile; });
+		auto it = std::ranges::find_if(list.begin(), list.end(), [&_srcFile](auto& _it) { return *_it == &_srcFile; });
 
 		if (it != list.end())
 		{
@@ -45,7 +119,7 @@ HotReloader::~HotReloader()
 	while (!m_dllIDList.empty())
 	{
 		auto dllData = m_dllIDList.back();
-		dllData->m_loader.Release();
+		dllData->Release();
 
 		delete dllData;
 		dllData = nullptr;
@@ -56,6 +130,11 @@ HotReloader::~HotReloader()
 
 void HotReloader::Update()
 {
+	for (auto& it : m_dllIDList)
+	{
+		it->Update();
+	}
+
 	if (m_dirtyDll.empty())return;
 	Reload();
 }
@@ -65,17 +144,27 @@ void HotReloader::Register(const std::filesystem::path& _srcPath)
 	auto& registry = Application::Instance().GetAssetManager()->GetLibrary();
 	auto it = std::find_if(registry.begin(), registry.end(), [&_srcPath](auto& metaData) { return _srcPath == metaData.second.filePath; });
 
-	if (it != registry.end()) 
+	if (it != registry.end())
 	{
-		m_dllIDList.push_back(new DllData(&it->second));
+		auto temp = new DllData(&it->second);
+		if (temp->Load())
+		{
+			m_dllIDList.push_back(temp);
+		}
+		else
+		{
+			temp->Release();
+			delete temp;
+			temp = nullptr;
+		}
 	}
 }
 void HotReloader::Unregister(const std::filesystem::path& _srcPath)
 {
-	auto it = std::find_if(m_dllIDList.begin(), m_dllIDList.end(), [&_srcPath](auto& metaData) { return _srcPath == metaData->m_metaData->filePath; });
+	auto it = std::find_if(m_dllIDList.begin(), m_dllIDList.end(), [&_srcPath](auto& metaData) { return *metaData == _srcPath; });
 	if (it != m_dllIDList.end())
 	{
-		(**it).m_loader.Release();
+		(**it).Release();
 		m_dllIDList.erase(it);
 	}
 }
@@ -84,8 +173,8 @@ void HotReloader::Reload()
 {
 	for (auto& it : m_dirtyDll)
 	{
-		it->m_loader.Release();
-		it->m_loader.Load(it->m_metaData->filePath.c_str());
+		it->Release();
+		it->Load();
 	}
 
 	m_dirtyDll.clear();

@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Command.h" />
-    <ClInclude Include="Src\ICommand.h" />
+    <ClInclude Include="Src\Module.h" />
+    <ClInclude Include="Src\IModule.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Command.cpp" />
+    <ClCompile Include="Src\Module.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

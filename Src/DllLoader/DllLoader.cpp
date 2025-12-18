@@ -9,7 +9,7 @@ struct DllLoader::hModuleImple
 
 DllLoader::~DllLoader()
 {
-	if (m_phModuleImple) 
+	if (m_phModuleImple)
 	{
 		Release();
 	}
@@ -18,7 +18,7 @@ DllLoader::~DllLoader()
 bool DllLoader::Load(const char* dllPath)
 {
 	if (m_phModuleImple) {
-		std::cerr << "loaded to DllLoader: " << dllPath << std::endl;
+		std::cout << "loaded to DllLoader: " << dllPath << std::endl;
 		return false;
 	}
 
@@ -26,7 +26,7 @@ bool DllLoader::Load(const char* dllPath)
 
 	m_phModuleImple->hModule = LoadLibraryA(dllPath);
 	if (!m_phModuleImple->hModule) {
-		std::cerr << "Failed to load DLL: " << dllPath << std::endl;
+		std::cout << "Failed to load DLL: " << dllPath << std::endl;
 		return false;
 	}
 	return true;
@@ -34,12 +34,20 @@ bool DllLoader::Load(const char* dllPath)
 
 void DllLoader::Release()
 {
-	FreeLibrary(m_phModuleImple->hModule);
-	delete m_phModuleImple;
+	if (m_phModuleImple)
+	{
+		FreeLibrary(m_phModuleImple->hModule);
+		delete m_phModuleImple;
+	}
 	m_phModuleImple = nullptr;
 }
 
-void* DllLoader::GetFunction(const char* dllPath)
+void* DllLoader::GetFunction(const char* functionName)
 {
-	return GetProcAddress(m_phModuleImple->hModule, dllPath);
+	auto procaddress = GetProcAddress(m_phModuleImple->hModule, functionName);
+	if (!procaddress)
+	{
+		std::cout << "Failed to Get Function: " << functionName << std::endl;
+	}
+	return procaddress;
 }

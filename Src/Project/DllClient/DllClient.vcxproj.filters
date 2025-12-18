@@ -6,15 +6,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\ICommand.h">
+    <ClInclude Include="Src\IModule.h">
       <Filter>Src</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Command.h">
+    <ClInclude Include="Src\Module.h">
       <Filter>Src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Command.cpp">
+    <ClCompile Include="Src\Module.cpp">
       <Filter>Src</Filter>
     </ClCompile>
   </ItemGroup>

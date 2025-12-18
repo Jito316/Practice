@@ -10,16 +10,39 @@
 #include "Application/Application.h"
 #include "AssetManager/AssetManager.h"
 #include "DllLoader/DllLoader.h"
+#include "Application/HotReloader/HotReloader.h"
 
 //#include "ICommand.h"
+
+class OnWriteCallBack :public AssetManager::IFileWriteHandler
+{
+	void OnWrite(const AssetManager::MetaData& _meta)override
+	{
+		std::cout << "書き込み！:" << _meta.filePath << std::endl;
+	}
+};
 
 int main()
 {
 	DllLoader dllLoader;
-	//ICommand* command = nullptr;
+	HotReloader hotreloader;
+	auto& assetMgr = *Application::Instance().GetAssetManager();
+
+	assetMgr.AddListener(std::make_shared<OnWriteCallBack>());
+
+	for (auto& [key, vale] : assetMgr.GetLibrary())
+	{
+		std::filesystem::path path(vale.filePath);
+		if (".dll" == path.extension())
+		{
+			hotreloader.Register(path);
+		}
+	}
 
 	while (!Application::Instance().IsEnd())
 	{
+		hotreloader.Update();
+
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
 		{
 			Application::Instance().End();

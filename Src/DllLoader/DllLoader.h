@@ -8,7 +8,7 @@ public:
 	bool Load(const char* dllPath);
 	void Release();
 
-	void* GetFunction(const char* dllPath);
+	void* GetFunction(const char* functionName);
 private:
 	struct hModuleImple;
 	hModuleImple* m_phModuleImple = nullptr;
