@@ -5,12 +5,12 @@
     <ClInclude Include="Src\Window\WindowsWindow.h">
       <Filter>Src\Window</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Renderer\Direct3D.h">
+      <Filter>Src\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Pch.cpp" />
-    <ClCompile Include="Src\2_CoreSystem\Graphics\KdGraphicsStates.cpp">
-      <Filter>2_CoreSystem\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Src\2_CoreSystem\Graphics\KdGraphicsStates.cpp">
       <Filter>2_CoreSystem\Graphics</Filter>
     </ClCompile>
@@ -19,6 +19,9 @@
     </ClCompile>
     <ClCompile Include="Src\Window\WindowsWindow.cpp">
       <Filter>Src\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Renderer\Direct3D.cpp">
+      <Filter>Src\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -30,6 +33,9 @@
     </Filter>
     <Filter Include="Src\Window">
       <UniqueIdentifier>{d1e23b6e-1c80-424f-8816-7a751b056aa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Renderer">
+      <UniqueIdentifier>{02e47e71-beb1-4041-b2ef-1a2874498632}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -11,9 +11,9 @@ static LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void WindowsWindow::Setup()
+void WindowsWindow::Setup(int _width, int _height)
 {
-	int window_width = 1280, window_height = 720;
+	m_windowSize = { _width, _height };
 	m_className = L"DX12Sample";
 
 	// ウィンドウクラスの生成＆登録
@@ -26,7 +26,7 @@ void WindowsWindow::Setup()
 
 	RegisterClassEx(&w);
 
-	RECT wrc{ 0,0,window_width,window_height };
+	RECT wrc{ 0,0,m_windowSize.width,m_windowSize.height };
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	m_hwnd = CreateWindow(
@@ -64,7 +64,7 @@ void WindowsWindow::Execute()
 
 void WindowsWindow::Shutdown()
 {
-	if (m_hwnd) 
+	if (m_hwnd)
 	{
 		UnregisterClass(m_className.data(), GetInstanceHandle());
 	}
