@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Src\Pch.h" />
+    <ClInclude Include="Src\Window\WindowsWindow.h">
+      <Filter>Src\Window</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Src\Pch.cpp" />
+    <ClCompile Include="Src\2_CoreSystem\Graphics\KdGraphicsStates.cpp">
+      <Filter>2_CoreSystem\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\2_CoreSystem\Graphics\KdGraphicsStates.cpp">
+      <Filter>2_CoreSystem\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\main.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Window\WindowsWindow.cpp">
+      <Filter>Src\Window</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Src">
+      <UniqueIdentifier>{345b4cf7-cc46-480d-8286-c9edaa642a84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Window">
+      <UniqueIdentifier>{d1e23b6e-1c80-424f-8816-7a751b056aa4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
