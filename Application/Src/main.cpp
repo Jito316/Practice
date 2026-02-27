@@ -7,15 +7,17 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	WindowsWindow window;
+	auto& d3d = Direct3D::Instance();
 	window.Setup(1280, 720);
-	Direct3D::Instance().Initialize(&window);
+	d3d.Initialize(&window);
 
 	while (window.IsEnd() == false)
 	{
 		window.Execute();
+		d3d.Render();
 	}
 
-	Direct3D::Instance().Finalize();
+	d3d.Finalize();
 	window.Shutdown();
 	return 0;
 }
