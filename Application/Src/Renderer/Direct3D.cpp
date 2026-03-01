@@ -19,25 +19,22 @@ static void EnableDebugLayer()
 
 bool Direct3D::Initialize(WindowsWindow* _window)
 {
+
 #ifdef _DEBUG
 	EnableDebugLayer();
-	HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory));
-#else
-	HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory));
 #endif
 
-	if (hr != S_OK)
+	if (CreateFactory() == false)
 	{
-		assert(false && "DXGIファクトリ作成失敗");
 		return false;
 	}
 
 	if (CreateDevice() == false)
 	{
-		assert(false && "D3D12デバイス作成失敗");
 		return false;
 	}
 
+	/*
 	if (CreateCommandObjects() == false)
 	{
 		return false;
@@ -53,35 +50,39 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 		return false;
 	}
 
-	hr = m_device->CreateFence(m_fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence));
-	if (hr != S_OK)
+	if (CreateFence() == false)
 	{
-		assert(false && "フェンス作成失敗");
 		return false;
 	}
+	*/
 
-	m_fenveEvent = CreateEvent(nullptr, false, false, nullptr);
-
-	return true;
+	return false;
 }
 
 void Direct3D::Finalize()
 {
-	//イベントハンドルを閉じる
-	CloseHandle(m_fenveEvent);
-	m_pFence.Reset();
+	if(m_fenveEvent)CloseHandle(m_fenveEvent);
 
-	m_rtvHeaps.Reset();
+	if(m_swapChain)m_swapChain.Reset();
 
-	m_swapChain.Reset();
+	if(m_rtvHeaps)m_rtvHeaps.Reset();
 
-	m_cmdQueue.Reset();
+	if(m_cmdQueue)m_cmdQueue.Reset();
+	if(m_cmdAllocator)m_cmdAllocator.Reset();
+	if(m_cmdList)m_cmdList.Reset();
 
-	m_cmdAllocator.Reset();
-	m_cmdList.Reset();
+	if(m_pFence)m_pFence.Reset();
 
-	m_device.Reset();
-	m_dxgiFactory.Reset();
+	if(m_pAdapter)m_pAdapter.Reset();
+
+#ifdef _DEBUG
+	Microsoft::WRL::ComPtr<ID3D12DebugDevice> debugDevice;
+	if (SUCCEEDED(m_device.As(&debugDevice))) { debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL); }
+#endif
+
+	if(m_device)m_device.Reset();
+
+	if(m_dxgiFactory)m_dxgiFactory.Reset();
 }
 
 void Direct3D::Render()
@@ -136,12 +137,28 @@ void Direct3D::Render()
 	m_swapChain->Present(1, 0);
 }
 
+bool Direct3D::CreateFactory()
+{
+#ifdef _DEBUG
+	HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory));
+#else
+	HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory));
+#endif
+
+	if (FAILED(hr)) 
+	{
+		assert(false && "DXGIファクトリ作成失敗");
+		return false;
+	}
+
+	return true;
+}
+
 bool Direct3D::CreateDevice()
 {
-	auto tmpAdapter = FindAdapter();
-	if (tmpAdapter == nullptr)
-	{
-		assert(false && "指定したグラボが見つかりませんでした");
+	m_pAdapter = FindAdapter();
+	if (m_pAdapter == nullptr)
+	{	
 		return false;
 	}
 
@@ -156,7 +173,7 @@ bool Direct3D::CreateDevice()
 	for (auto lv : levels)
 	{
 		HRESULT hr = D3D12CreateDevice(
-			tmpAdapter//nullptrだと使用するアダプター（グラフィックボード）を自動で選択
+			m_pAdapter.Get()//nullptrだと使用するアダプター（グラフィックボード）を自動で選択
 			, lv//最低限必要なフィーチャーレベル、使うグラボ次第では非対応もアリ（最大はD3D_FEATURE_LEVEL_12_1）
 			, IID_PPV_ARGS(&m_device)//第3,4引数、リザルト型とリザルト
 		);
@@ -165,6 +182,11 @@ bool Direct3D::CreateDevice()
 		{
 			break;
 		}
+	}
+
+	if (m_device == nullptr)
+	{
+		assert(false && "D3D12デバイス作成失敗");
 	}
 
 	return m_device != nullptr;
@@ -310,36 +332,86 @@ bool Direct3D::CreateBuffer()
 	return true;
 }
 
-IDXGIAdapter* Direct3D::FindAdapter()
+bool Direct3D::CreateFence()
 {
-	//アダプターの列挙用
-	std::vector<IDXGIAdapter*>adapters;
-	//ここに特定の名前を持つアダプターオブジェクトが入る
-	IDXGIAdapter* tmpAdapter = nullptr;
-
-	for (int i = 0;
-		m_dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND;
-		++i)
+	HRESULT hr = m_device->CreateFence(m_fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence));
+	if (hr != S_OK)
 	{
-		adapters.push_back(tmpAdapter);
+		assert(false && "フェンス作成失敗");
+		return false;
 	}
 
-	for (auto adpt : adapters)
+	m_fenveEvent = CreateEvent(nullptr, false, false, nullptr);
+
+	return false;
+}
+
+Microsoft::WRL::ComPtr<IDXGIAdapter> Direct3D::FindAdapter()
+{
+	Microsoft::WRL::ComPtr<IDXGIAdapter> pSelectAdapter = nullptr;
+	std::vector<Microsoft::WRL::ComPtr<IDXGIAdapter>> pAdapters;
+	std::vector<DXGI_ADAPTER_DESC> descs;
+
+	//使用中のPCにあるGPUドライバーを検索して、あれば格納
+	for (UINT index = 0; true; ++index) 
 	{
-		DXGI_ADAPTER_DESC adesc = {};
-		adpt->GetDesc(&adesc);//アダプターの説明オブジェクト取得
+		pAdapters.push_back(nullptr);
+		HRESULT ret = m_dxgiFactory->EnumAdapters(index, &pAdapters[index]);
 
-		std::wstring strDesc = adesc.Description;
+		if (ret == DXGI_ERROR_NOT_FOUND) { break; }
 
-		if (strDesc.find(L"NVIDIA") != std::string::npos)
-		{
-			tmpAdapter = adpt;
-		}
-		else 
-		{
-			adpt->Release();
-		}
+		descs.push_back({});
+		pAdapters[index]->GetDesc(&descs[index]);
 	}
 
-	return tmpAdapter;
+	GPUTier gpuTier = GPUTier::Kind;
+
+	//優先度の高いGPUドライバーを使用
+	for (int i = 0; i < descs.size(); ++i)
+	{
+		if (std::wstring(descs[i].Description).find(L"NVIDIA") != std::wstring::npos)
+		{
+			pSelectAdapter = pAdapters[i];
+			break;
+		}
+		else if(std::wstring(descs[i].Description).find(L"Amd") != std::wstring::npos)
+		{
+			if (gpuTier > GPUTier::Amd) 
+			{
+				pSelectAdapter = pAdapters[i];
+				gpuTier = GPUTier::Amd;
+			}
+		}
+		else if(std::wstring(descs[i].Description).find(L"Intel") != std::wstring::npos)
+		{
+			if (gpuTier > GPUTier::Intel) 
+			{
+				pSelectAdapter = pAdapters[i];
+				gpuTier = GPUTier::Intel;
+			}
+		}
+		else if(std::wstring(descs[i].Description).find(L"Arm") != std::wstring::npos)
+		{
+			if (gpuTier > GPUTier::Arm) 
+			{
+				pSelectAdapter = pAdapters[i];
+				gpuTier = GPUTier::Arm;
+			}
+		}
+		else if(std::wstring(descs[i].Description).find(L"Qualcomm") != std::wstring::npos)
+		{
+			if (gpuTier > GPUTier::Qualcomm)
+			{
+				pSelectAdapter = pAdapters[i];
+				gpuTier = GPUTier::Qualcomm;
+			}
+		}
+	}
+	
+	if (pSelectAdapter == nullptr) 
+	{
+		assert(false && "指定したグラボが見つかりませんでした");
+	}
+
+	return pSelectAdapter;
 }
