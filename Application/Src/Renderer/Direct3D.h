@@ -43,9 +43,8 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIAdapter> m_pAdapter;
 
 	UINT64 m_fenceVal = 0;
-	HANDLE m_fenveEvent = nullptr;
 
-	std::vector<ID3D12Resource*> m_backBuffers;
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_backBuffers;
 
 	bool CreateFactory();
 	bool CreateDevice();

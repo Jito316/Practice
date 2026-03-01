@@ -19,22 +19,19 @@ static void EnableDebugLayer()
 
 bool Direct3D::Initialize(WindowsWindow* _window)
 {
-
-#ifdef _DEBUG
-	EnableDebugLayer();
-#endif
-
 	if (CreateFactory() == false)
 	{
 		return false;
 	}
 
+#ifdef _DEBUG
+	EnableDebugLayer();
+#endif
+
 	if (CreateDevice() == false)
 	{
 		return false;
 	}
-
-	/*
 	if (CreateCommandObjects() == false)
 	{
 		return false;
@@ -54,23 +51,24 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 	{
 		return false;
 	}
-	*/
 
-	return false;
+	return true;
 }
 
 void Direct3D::Finalize()
 {
-	if(m_fenveEvent)CloseHandle(m_fenveEvent);
+	if(m_rtvHeaps)m_rtvHeaps.Reset();
+	if (m_backBuffers.size()) 
+	{
+		for (auto& buffer : m_backBuffers)buffer.Reset();
+		m_backBuffers.clear();
+	}
 
 	if(m_swapChain)m_swapChain.Reset();
-
-	if(m_rtvHeaps)m_rtvHeaps.Reset();
 
 	if(m_cmdQueue)m_cmdQueue.Reset();
 	if(m_cmdAllocator)m_cmdAllocator.Reset();
 	if(m_cmdList)m_cmdList.Reset();
-
 	if(m_pFence)m_pFence.Reset();
 
 	if(m_pAdapter)m_pAdapter.Reset();
@@ -89,14 +87,11 @@ void Direct3D::Render()
 {
 	auto bbIdx = m_swapChain->GetCurrentBackBufferIndex();
 
-	m_cmdAllocator->Reset();//キュークリア
-	m_cmdList->Reset(m_cmdAllocator.Get(), nullptr);//再びコマンドリストを溜める準備
-
 	//リソースバリア設定
 	D3D12_RESOURCE_BARRIER barrierDesc = {};
 	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//遷移
 	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;//特に指定なし
-	barrierDesc.Transition.pResource = m_backBuffers[bbIdx];//バックバッファリソース
+	barrierDesc.Transition.pResource = m_backBuffers[bbIdx].Get();//バックバッファリソース
 	barrierDesc.Transition.Subresource = 0;
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -124,14 +119,20 @@ void Direct3D::Render()
 	m_cmdQueue->ExecuteCommandLists(1, cmdLists);
 
 	//待機
+	HANDLE fenveEvent = CreateEvent(nullptr, false, false, nullptr);
 	m_cmdQueue->Signal(m_pFence.Get(), ++m_fenceVal);
 	if (m_pFence->GetCompletedValue() != m_fenceVal)
 	{
 		//イベントハンドルの取得
-		m_pFence->SetEventOnCompletion(m_fenceVal, m_fenveEvent);
+		m_pFence->SetEventOnCompletion(m_fenceVal, fenveEvent);
 		//イベントが発生するまで待ち続ける（INFINITE）
-		WaitForSingleObject(m_fenveEvent, INFINITE);
+		WaitForSingleObject(fenveEvent, INFINITE);
+		CloseHandle(fenveEvent);
 	}
+
+	//コマンドアロケーターとコマンドリストを初期化
+	m_cmdAllocator->Reset();
+	m_cmdList->Reset(m_cmdAllocator.Get(),nullptr);
 
 	//フリップ
 	m_swapChain->Present(1, 0);
@@ -218,8 +219,6 @@ bool Direct3D::CreateCommandObjects()
 		return false;
 	}
 
-	m_cmdList->Close();
-
 	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
 
 	//タイムアウトなし
@@ -270,12 +269,11 @@ bool Direct3D::CreateSwapChain(WindowsWindow* _window)
 	//ウィンドウ⇔振りscreen切り替え可能
 	swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	IDXGISwapChain1* swapchain = nullptr;
 	HRESULT hr = m_dxgiFactory->CreateSwapChainForHwnd(
 		m_cmdQueue.Get()
 		, _window->GetWindowHandle()
 		, &swapchainDesc, nullptr, nullptr
-		, &swapchain
+		, (IDXGISwapChain1**)m_swapChain.ReleaseAndGetAddressOf()
 	);
 
 	if (hr != S_OK)
@@ -283,8 +281,6 @@ bool Direct3D::CreateSwapChain(WindowsWindow* _window)
 		assert(false && "DXGIスワップチェーン作成失敗");
 		return false;
 	}
-
-	m_swapChain = Microsoft::WRL::ComPtr<IDXGISwapChain4>((IDXGISwapChain4*)swapchain);
 
 	return true;
 }
@@ -326,7 +322,7 @@ bool Direct3D::CreateBuffer()
 		D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
 		handle.ptr += index * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-		m_device->CreateRenderTargetView(m_backBuffers[index], nullptr, handle);
+		m_device->CreateRenderTargetView(m_backBuffers[index].Get(), nullptr, handle);
 	}
 
 	return true;
@@ -340,10 +336,7 @@ bool Direct3D::CreateFence()
 		assert(false && "フェンス作成失敗");
 		return false;
 	}
-
-	m_fenveEvent = CreateEvent(nullptr, false, false, nullptr);
-
-	return false;
+	return true;
 }
 
 Microsoft::WRL::ComPtr<IDXGIAdapter> Direct3D::FindAdapter()
