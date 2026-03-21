@@ -159,6 +159,12 @@
   <ItemGroup>
     <ClInclude Include="Src\Pch.h" />
     <ClInclude Include="Src\Renderer\Direct3D.h" />
+    <ClInclude Include="Src\Renderer\Heap\Heap.h" />
+    <ClInclude Include="Src\Renderer\Heap\RTVHeap\RTVHeap.h" />
+    <ClInclude Include="Src\Renderer\Mesh\Mesh.h" />
+    <ClInclude Include="Src\Renderer\Shader\Pipeline\Pipeline.h" />
+    <ClInclude Include="Src\Renderer\Shader\RootSignature\RootSignature.h" />
+    <ClInclude Include="Src\Renderer\Shader\Shader.h" />
     <ClInclude Include="Src\Window\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
@@ -168,10 +174,29 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\Renderer\Direct3D.cpp" />
+    <ClCompile Include="Src\Renderer\Heap\RTVHeap\RTVHeap.cpp" />
+    <ClCompile Include="Src\Renderer\Mesh\Mesh.cpp" />
+    <ClCompile Include="Src\Renderer\Shader\Pipeline\Pipeline.cpp" />
+    <ClCompile Include="Src\Renderer\Shader\RootSignature\RootSignature.cpp" />
+    <ClCompile Include="Src\Renderer\Shader\Shader.cpp" />
     <ClCompile Include="Src\Window\WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shader\BasicShader_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Assets\Shader\BasicShader_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,8 +1,13 @@
 ﻿#pragma once
 
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+
+#include <d3d12.h>
+#include <dxgi1_6.h>
+
+
 class WindowsWindow;
-class RTVHeap;
-class Shader;
 
 class Direct3D
 {
@@ -10,15 +15,10 @@ public:
 	bool Initialize(WindowsWindow* _window);
 	void Finalize();
 
-	void Prepare();
-	void ScreenFlip();
-
-	ID3D12Device* GetDevice() const { return m_device.Get(); }
-	ID3D12GraphicsCommandList* GetCmdList() const { return m_cmdList.Get(); }
+	void Render();
 private:
-	void SetResourceBarrier(ID3D12Resource* _pResource,D3D12_RESOURCE_STATES _stateBefore, D3D12_RESOURCE_STATES _stateAfter);
 
-	enum class GPUTier
+	enum class GPUTier 
 	{
 		NVIDIA,
 		Amd,
@@ -36,9 +36,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_cmdList;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_cmdQueue;
 
-
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_backBuffers;
-	std::shared_ptr<RTVHeap> m_rtvHeaps;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvHeaps;
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_pFence;
 
@@ -46,11 +44,13 @@ private:
 
 	UINT64 m_fenceVal = 0;
 
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_backBuffers;
+
 	bool CreateFactory();
 	bool CreateDevice();
 	bool CreateCommandObjects();
 	bool CreateSwapChain(WindowsWindow* _window);
-	bool CreateRTVBuffer();
+	bool CreateBuffer();
 	bool CreateFence();
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter> FindAdapter();

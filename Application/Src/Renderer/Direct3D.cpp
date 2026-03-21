@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "Window/WindowsWindow.h"
+#include "Renderer/Heap/RTVHeap/RTVHeap.h"
 
 #ifdef _DEBUG
 static void EnableDebugLayer()
@@ -42,7 +43,7 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 		return false;
 	}
 
-	if (CreateBuffer() == false)
+	if (CreateRTVBuffer() == false)
 	{
 		return false;
 	}
@@ -57,59 +58,47 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 
 void Direct3D::Finalize()
 {
-	if(m_rtvHeaps)m_rtvHeaps.Reset();
-	if (m_backBuffers.size()) 
+	if (m_rtvHeaps)m_rtvHeaps.reset();
+	if (m_backBuffers.size())
 	{
 		for (auto& buffer : m_backBuffers)buffer.Reset();
 		m_backBuffers.clear();
 	}
 
-	if(m_swapChain)m_swapChain.Reset();
+	if (m_swapChain)m_swapChain.Reset();
 
-	if(m_cmdQueue)m_cmdQueue.Reset();
-	if(m_cmdAllocator)m_cmdAllocator.Reset();
-	if(m_cmdList)m_cmdList.Reset();
-	if(m_pFence)m_pFence.Reset();
+	if (m_cmdQueue)m_cmdQueue.Reset();
+	if (m_cmdAllocator)m_cmdAllocator.Reset();
+	if (m_cmdList)m_cmdList.Reset();
+	if (m_pFence)m_pFence.Reset();
 
-	if(m_pAdapter)m_pAdapter.Reset();
+	if (m_pAdapter)m_pAdapter.Reset();
 
-#ifdef _DEBUG
-	Microsoft::WRL::ComPtr<ID3D12DebugDevice> debugDevice;
-	if (SUCCEEDED(m_device.As(&debugDevice))) { debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL); }
-#endif
+	if (m_device)m_device.Reset();
 
-	if(m_device)m_device.Reset();
-
-	if(m_dxgiFactory)m_dxgiFactory.Reset();
+	if (m_dxgiFactory)m_dxgiFactory.Reset();
 }
 
-void Direct3D::Render()
+void Direct3D::Prepare()
 {
-	auto bbIdx = m_swapChain->GetCurrentBackBufferIndex();
-
 	//リソースバリア設定
-	D3D12_RESOURCE_BARRIER barrierDesc = {};
-	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//遷移
-	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;//特に指定なし
-	barrierDesc.Transition.pResource = m_backBuffers[bbIdx].Get();//バックバッファリソース
-	barrierDesc.Transition.Subresource = 0;
-	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	m_cmdList->ResourceBarrier(1, &barrierDesc);
+	auto bbIdx = m_swapChain->GetCurrentBackBufferIndex();
+	SetResourceBarrier(m_backBuffers[bbIdx].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	//書き込むレンダーターゲットの設定
-	auto rtv = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-	rtv.ptr += bbIdx * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	auto rtv = m_rtvHeaps->GetCPUHandle(bbIdx);
 	m_cmdList->OMSetRenderTargets(1, &rtv, true, nullptr);
 
 	//コマンドリストに命令
 	float clearColor[] = { 0.0f,0.0f, 1.0f, 1.0f };
 	m_cmdList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+}
 
+void Direct3D::ScreenFlip()
+{
 	//リソースバリア設定
-	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	m_cmdList->ResourceBarrier(1, &barrierDesc);
+	auto bbIdx = m_swapChain->GetCurrentBackBufferIndex();
+	SetResourceBarrier(m_backBuffers[bbIdx].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	//命令のクローズ
 	m_cmdList->Close();
@@ -132,10 +121,23 @@ void Direct3D::Render()
 
 	//コマンドアロケーターとコマンドリストを初期化
 	m_cmdAllocator->Reset();
-	m_cmdList->Reset(m_cmdAllocator.Get(),nullptr);
+	m_cmdList->Reset(m_cmdAllocator.Get(), nullptr);
 
 	//フリップ
 	m_swapChain->Present(1, 0);
+}
+
+void Direct3D::SetResourceBarrier(ID3D12Resource* _pResource, D3D12_RESOURCE_STATES _stateBefore, D3D12_RESOURCE_STATES _stateAfter)
+{
+	//リソースバリア設定
+	D3D12_RESOURCE_BARRIER barrierDesc = {};
+	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//遷移
+	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;//特に指定なし
+	barrierDesc.Transition.pResource = _pResource;//バックバッファリソース
+	barrierDesc.Transition.Subresource = 0;
+	barrierDesc.Transition.StateBefore = _stateBefore;
+	barrierDesc.Transition.StateAfter = _stateAfter;
+	m_cmdList->ResourceBarrier(1, &barrierDesc);
 }
 
 bool Direct3D::CreateFactory()
@@ -146,7 +148,7 @@ bool Direct3D::CreateFactory()
 	HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory));
 #endif
 
-	if (FAILED(hr)) 
+	if (FAILED(hr))
 	{
 		assert(false && "DXGIファクトリ作成失敗");
 		return false;
@@ -159,7 +161,7 @@ bool Direct3D::CreateDevice()
 {
 	m_pAdapter = FindAdapter();
 	if (m_pAdapter == nullptr)
-	{	
+	{
 		return false;
 	}
 
@@ -188,9 +190,10 @@ bool Direct3D::CreateDevice()
 	if (m_device == nullptr)
 	{
 		assert(false && "D3D12デバイス作成失敗");
+		return false;
 	}
 
-	return m_device != nullptr;
+	return true;
 }
 
 bool Direct3D::CreateCommandObjects()
@@ -285,44 +288,36 @@ bool Direct3D::CreateSwapChain(WindowsWindow* _window)
 	return true;
 }
 
-bool Direct3D::CreateBuffer()
+bool Direct3D::CreateRTVBuffer()
 {
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//レンダーターゲットビューなのでRTV
-	heapDesc.NodeMask = 0;//使うGPUの指定（一つだけでなら0で良し！
-	heapDesc.NumDescriptors = 2;//表裏二つ
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-	HRESULT hr = m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeaps));
+	DXGI_SWAP_CHAIN_DESC swpDesc;
+	HRESULT hr = m_swapChain->GetDesc(&swpDesc);
 	if (hr != S_OK)
 	{
-		assert(false && "ビュー用のメモリ領域確保失敗");
+		assert(false && "DXGIスワップチェーン設定取得失敗");
 		return false;
 	}
 
-	DXGI_SWAP_CHAIN_DESC swcDesc = {};
-	hr = m_swapChain->GetDesc(&swcDesc);
+	m_backBuffers.resize(swpDesc.BufferCount);
 
-	if (hr != S_OK)
+	m_rtvHeaps = std::make_shared<RTVHeap>();
+	if (m_rtvHeaps->Create(m_device.Get(), swpDesc.BufferCount) == false)
 	{
-		assert(false && "スワップチェーンの設定取得失敗");
 		return false;
 	}
 
-	m_backBuffers.resize(swcDesc.BufferCount);
-	for (size_t index = 0; index < swcDesc.BufferCount; ++index)
+	for (int i = 0;i < m_backBuffers.size();++i)
 	{
-		hr = m_swapChain->GetBuffer(index, IID_PPV_ARGS(&m_backBuffers[index]));
+		hr = m_swapChain->GetBuffer(i,IID_PPV_ARGS(&m_backBuffers[i]));
 		if (hr != S_OK)
 		{
-			assert(false && "バックバッファの取得失敗");
+			assert(false && "バッファ作成失敗");
 			return false;
 		}
 
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-		handle.ptr += index * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-		m_device->CreateRenderTargetView(m_backBuffers[index].Get(), nullptr, handle);
+		m_rtvHeaps->CreateRTV(m_backBuffers[i].Get());
 	}
 
 	return true;
@@ -346,7 +341,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter> Direct3D::FindAdapter()
 	std::vector<DXGI_ADAPTER_DESC> descs;
 
 	//使用中のPCにあるGPUドライバーを検索して、あれば格納
-	for (UINT index = 0; true; ++index) 
+	for (UINT index = 0; true; ++index)
 	{
 		pAdapters.push_back(nullptr);
 		HRESULT ret = m_dxgiFactory->EnumAdapters(index, &pAdapters[index]);
@@ -367,31 +362,31 @@ Microsoft::WRL::ComPtr<IDXGIAdapter> Direct3D::FindAdapter()
 			pSelectAdapter = pAdapters[i];
 			break;
 		}
-		else if(std::wstring(descs[i].Description).find(L"Amd") != std::wstring::npos)
+		else if (std::wstring(descs[i].Description).find(L"Amd") != std::wstring::npos)
 		{
-			if (gpuTier > GPUTier::Amd) 
+			if (gpuTier > GPUTier::Amd)
 			{
 				pSelectAdapter = pAdapters[i];
 				gpuTier = GPUTier::Amd;
 			}
 		}
-		else if(std::wstring(descs[i].Description).find(L"Intel") != std::wstring::npos)
+		else if (std::wstring(descs[i].Description).find(L"Intel") != std::wstring::npos)
 		{
-			if (gpuTier > GPUTier::Intel) 
+			if (gpuTier > GPUTier::Intel)
 			{
 				pSelectAdapter = pAdapters[i];
 				gpuTier = GPUTier::Intel;
 			}
 		}
-		else if(std::wstring(descs[i].Description).find(L"Arm") != std::wstring::npos)
+		else if (std::wstring(descs[i].Description).find(L"Arm") != std::wstring::npos)
 		{
-			if (gpuTier > GPUTier::Arm) 
+			if (gpuTier > GPUTier::Arm)
 			{
 				pSelectAdapter = pAdapters[i];
 				gpuTier = GPUTier::Arm;
 			}
 		}
-		else if(std::wstring(descs[i].Description).find(L"Qualcomm") != std::wstring::npos)
+		else if (std::wstring(descs[i].Description).find(L"Qualcomm") != std::wstring::npos)
 		{
 			if (gpuTier > GPUTier::Qualcomm)
 			{
@@ -400,8 +395,8 @@ Microsoft::WRL::ComPtr<IDXGIAdapter> Direct3D::FindAdapter()
 			}
 		}
 	}
-	
-	if (pSelectAdapter == nullptr) 
+
+	if (pSelectAdapter == nullptr)
 	{
 		assert(false && "指定したグラボが見つかりませんでした");
 	}

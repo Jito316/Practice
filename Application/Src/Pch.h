@@ -53,6 +53,23 @@
 #include <execution>
 #include <any>
 
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+
+#include <d3d12.h>
+#include <dxgi1_6.h>
+
+#pragma comment(lib,"d3dcompiler.lib")
+#include <d3dcompiler.h>
+
+#include <DirectXMath.h>
+namespace Math
+{
+	typedef DirectX::XMMATRIX Matrix;
+	typedef DirectX::XMFLOAT3 Vector3;
+	typedef DirectX::XMFLOAT2 Vector2;
+};
+
 /*
 //===============================================
 //
@@ -67,7 +84,6 @@
 #include <dxgi.h>
 #include <d3d11.h>
 
-#include <DirectXMath.h>
 #include <DirectXCollision.h>
 
 // DirectX Tool Kit
