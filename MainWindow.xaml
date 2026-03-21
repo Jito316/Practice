@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ToolTest"
         mc:Ignorable="d"
-        Title="日報管理ツール" Height="500" Width="738"
+        Title="ToolTest" Height="500" Width="738"
         Background="#F5F6F7" UseLayoutRounding="True" ResizeMode="NoResize">
 
     <Window.DataContext>
