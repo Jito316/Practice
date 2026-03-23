@@ -59,12 +59,6 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 void Direct3D::Finalize()
 {
 	if (m_rtvHeaps)m_rtvHeaps.reset();
-	if (m_backBuffers.size())
-	{
-		for (auto& buffer : m_backBuffers)buffer.Reset();
-		m_backBuffers.clear();
-	}
-
 	if (m_swapChain)m_swapChain.Reset();
 
 	if (m_cmdQueue)m_cmdQueue.Reset();

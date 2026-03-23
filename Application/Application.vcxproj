@@ -182,6 +182,7 @@
     <ClCompile Include="Src\Window\WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Shader\inc_BasicShader.hlsli" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

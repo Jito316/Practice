@@ -16,7 +16,7 @@ enum class BlendMode
 enum class InputLayout
 {
 	POSITION,
-	TEXECOORD,
+	TEXCOORD,
 	NORMAL,
 	TANGENT,
 	COLOR,
@@ -51,9 +51,9 @@ private:
 	void SetBlendMode(D3D12_RENDER_TARGET_BLEND_DESC& _blendDesc, BlendMode _blendMode);
 
 	std::vector<InputLayout> m_inputLayouts;
-	CullMode m_cullMode;
-	BlendMode m_blendMode;
-	PrimitiveTopologyType m_topologyType;
+	CullMode m_cullMode = CullMode::Back;
+	BlendMode m_blendMode = BlendMode::Appha;
+	PrimitiveTopologyType m_topologyType = PrimitiveTopologyType::Triangle;
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pPipelineState;
 

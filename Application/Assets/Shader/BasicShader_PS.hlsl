@@ -1,4 +1,6 @@
-float4 main(float4 pos : SV_Position) : SV_TARGET
+#include "inc_BasicShader.hlsli"
+
+float4 main(VSOutput In) : SV_TARGET
 {
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);
+    return float4(In.uv.r, In.uv.g, 0.0f, 1.0f);
 }

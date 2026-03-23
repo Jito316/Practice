@@ -26,7 +26,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		mesh.Create(&d3d);
 
 		RenderingSetting renderingSetting = {};
-		renderingSetting.InputLayout = { InputLayout::POSITION };
+		renderingSetting.InputLayout = { InputLayout::POSITION,InputLayout::TEXCOORD };
 		renderingSetting.Formats = { DXGI_FORMAT_R8G8B8A8_UNORM };
 		renderingSetting.IsDepth = false;
 		renderingSetting.IsDepthMask = false;

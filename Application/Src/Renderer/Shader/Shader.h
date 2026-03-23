@@ -21,8 +21,6 @@ class Direct3D;
 class Shader 
 {
 public:
-	bool Init();
-
 	void Create(Direct3D* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes);
 
 	void Begin(int _w, int _h);

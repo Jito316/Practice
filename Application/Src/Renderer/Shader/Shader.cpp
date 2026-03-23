@@ -1,11 +1,6 @@
 ﻿#include "Shader.h"
 #include "../Direct3D.h"
 
-bool Shader::Init()
-{
-	return true;
-}
-
 void Shader::Create(Direct3D* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes)
 {
 	m_pDevice = _pDevice;
@@ -41,7 +36,7 @@ void Shader::Begin(int _w, int _h)
 		cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		break;
 	case D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH:
-		cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+		cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
 		break;
 	}
 
