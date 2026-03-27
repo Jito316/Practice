@@ -2,9 +2,10 @@
 
 class WindowsWindow;
 class RTVHeap;
+class CBVSRVUAVHeap;
 class Shader;
 
-class Direct3D
+class GraphicsDevice
 {
 public:
 	bool Initialize(WindowsWindow* _window);
@@ -15,6 +16,9 @@ public:
 
 	ID3D12Device* GetDevice() const { return m_device.Get(); }
 	ID3D12GraphicsCommandList* GetCmdList() const { return m_cmdList.Get(); }
+
+	CBVSRVUAVHeap* GetCBVSRVUAVHeap() const{ return m_spCBVSRVUAVHeap.get(); }
+
 private:
 	void SetResourceBarrier(ID3D12Resource* _pResource,D3D12_RESOURCE_STATES _stateBefore, D3D12_RESOURCE_STATES _stateAfter);
 
@@ -38,7 +42,8 @@ private:
 
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_backBuffers;
-	std::shared_ptr<RTVHeap> m_rtvHeaps;
+	std::shared_ptr<RTVHeap> m_spRTVHeap;
+	std::shared_ptr<CBVSRVUAVHeap> m_spCBVSRVUAVHeap;
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> m_pFence;
 
@@ -55,13 +60,13 @@ private:
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter> FindAdapter();
 
-	Direct3D() = default;
-	Direct3D(Direct3D&&) = default;
-	Direct3D(Direct3D&) = default;
+	GraphicsDevice() = default;
+	GraphicsDevice(GraphicsDevice&&) = default;
+	GraphicsDevice(GraphicsDevice&) = default;
 public:
-	static Direct3D& Instance()
+	static GraphicsDevice& Instance()
 	{
-		static Direct3D instance;
+		static GraphicsDevice instance;
 		return instance;
 	}
 };

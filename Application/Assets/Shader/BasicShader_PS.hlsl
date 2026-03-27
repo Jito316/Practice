@@ -1,6 +1,10 @@
 #include "inc_BasicShader.hlsli"
 
+Texture2D<float4> g_inputTex : register(t0);
+SamplerState g_ss : register(s0);
+
 float4 main(VSOutput In) : SV_TARGET
 {
-    return float4(In.uv.r, In.uv.g, 0.0f, 1.0f);
+    float4 color = g_inputTex.Sample(g_ss, In.uv);
+    return color;
 }

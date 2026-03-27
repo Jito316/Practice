@@ -1,8 +1,7 @@
 ﻿#include "Pipeline.h"
-#include "../../Direct3D.h"
 #include "../RootSignature/RootSignature.h"
 
-void Pipeline::SetRenderSettings(Direct3D* _pDevice, RootSignature* _pRootSignature, const std::vector<InputLayout>& _inputLayouts, CullMode _cullMode, BlendMode _blendMode, PrimitiveTopologyType _topologyType)
+void Pipeline::SetRenderSettings(GraphicsDevice* _pDevice, RootSignature* _pRootSignature, const std::vector<InputLayout>& _inputLayouts, CullMode _cullMode, BlendMode _blendMode, PrimitiveTopologyType _topologyType)
 {
 	m_pDevice = _pDevice;
 	m_pRootSignature = _pRootSignature;

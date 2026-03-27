@@ -1,10 +1,11 @@
-﻿#include "Direct3D.h"
-
-#include <vector>
+﻿#include <vector>
 #include <assert.h>
 
+#include "GraphicsDevice.h"
+
 #include "Window/WindowsWindow.h"
-#include "Renderer/Heap/RTVHeap/RTVHeap.h"
+#include "Heap/RTVHeap/RTVHeap.h"
+#include "Heap/CBVSRVUAVHeap/CBVSRVUAVHeap.h"
 
 #ifdef _DEBUG
 static void EnableDebugLayer()
@@ -18,7 +19,7 @@ static void EnableDebugLayer()
 #endif // _DEBUG
 
 
-bool Direct3D::Initialize(WindowsWindow* _window)
+bool GraphicsDevice::Initialize(WindowsWindow* _window)
 {
 	if (CreateFactory() == false)
 	{
@@ -48,6 +49,13 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 		return false;
 	}
 
+	m_spCBVSRVUAVHeap = std::make_shared<CBVSRVUAVHeap>();
+	if (m_spCBVSRVUAVHeap->Create(this, HeapType::CBVSRVUAV, Math::Vector3(100, 100, 100)) == false)
+	{
+		assert(false && "CBVSRVUAVヒープ作成失敗");
+		return false;
+	}
+
 	if (CreateFence() == false)
 	{
 		return false;
@@ -56,9 +64,10 @@ bool Direct3D::Initialize(WindowsWindow* _window)
 	return true;
 }
 
-void Direct3D::Finalize()
+void GraphicsDevice::Finalize()
 {
-	if (m_rtvHeaps)m_rtvHeaps.reset();
+	if (m_spRTVHeap)m_spRTVHeap.reset();
+	if (m_spCBVSRVUAVHeap)m_spCBVSRVUAVHeap.reset();
 	if (m_swapChain)m_swapChain.Reset();
 
 	if (m_cmdQueue)m_cmdQueue.Reset();
@@ -73,14 +82,14 @@ void Direct3D::Finalize()
 	if (m_dxgiFactory)m_dxgiFactory.Reset();
 }
 
-void Direct3D::Prepare()
+void GraphicsDevice::Prepare()
 {
 	//リソースバリア設定
 	auto bbIdx = m_swapChain->GetCurrentBackBufferIndex();
 	SetResourceBarrier(m_backBuffers[bbIdx].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	//書き込むレンダーターゲットの設定
-	auto rtv = m_rtvHeaps->GetCPUHandle(bbIdx);
+	auto rtv = m_spRTVHeap->GetCPUHandle(bbIdx);
 	m_cmdList->OMSetRenderTargets(1, &rtv, true, nullptr);
 
 	//コマンドリストに命令
@@ -88,7 +97,7 @@ void Direct3D::Prepare()
 	m_cmdList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
 
-void Direct3D::ScreenFlip()
+void GraphicsDevice::ScreenFlip()
 {
 	//リソースバリア設定
 	auto bbIdx = m_swapChain->GetCurrentBackBufferIndex();
@@ -121,7 +130,7 @@ void Direct3D::ScreenFlip()
 	m_swapChain->Present(1, 0);
 }
 
-void Direct3D::SetResourceBarrier(ID3D12Resource* _pResource, D3D12_RESOURCE_STATES _stateBefore, D3D12_RESOURCE_STATES _stateAfter)
+void GraphicsDevice::SetResourceBarrier(ID3D12Resource* _pResource, D3D12_RESOURCE_STATES _stateBefore, D3D12_RESOURCE_STATES _stateAfter)
 {
 	//リソースバリア設定
 	D3D12_RESOURCE_BARRIER barrierDesc = {};
@@ -134,7 +143,7 @@ void Direct3D::SetResourceBarrier(ID3D12Resource* _pResource, D3D12_RESOURCE_STA
 	m_cmdList->ResourceBarrier(1, &barrierDesc);
 }
 
-bool Direct3D::CreateFactory()
+bool GraphicsDevice::CreateFactory()
 {
 #ifdef _DEBUG
 	HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory));
@@ -151,7 +160,7 @@ bool Direct3D::CreateFactory()
 	return true;
 }
 
-bool Direct3D::CreateDevice()
+bool GraphicsDevice::CreateDevice()
 {
 	m_pAdapter = FindAdapter();
 	if (m_pAdapter == nullptr)
@@ -190,7 +199,7 @@ bool Direct3D::CreateDevice()
 	return true;
 }
 
-bool Direct3D::CreateCommandObjects()
+bool GraphicsDevice::CreateCommandObjects()
 {
 	HRESULT hr = m_device->CreateCommandAllocator(
 		D3D12_COMMAND_LIST_TYPE_DIRECT
@@ -241,7 +250,7 @@ bool Direct3D::CreateCommandObjects()
 	return true;
 }
 
-bool Direct3D::CreateSwapChain(WindowsWindow* _window)
+bool GraphicsDevice::CreateSwapChain(WindowsWindow* _window)
 {
 	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
 
@@ -282,9 +291,8 @@ bool Direct3D::CreateSwapChain(WindowsWindow* _window)
 	return true;
 }
 
-bool Direct3D::CreateRTVBuffer()
+bool GraphicsDevice::CreateRTVBuffer()
 {
-
 	DXGI_SWAP_CHAIN_DESC swpDesc;
 	HRESULT hr = m_swapChain->GetDesc(&swpDesc);
 	if (hr != S_OK)
@@ -295,15 +303,16 @@ bool Direct3D::CreateRTVBuffer()
 
 	m_backBuffers.resize(swpDesc.BufferCount);
 
-	m_rtvHeaps = std::make_shared<RTVHeap>();
-	if (m_rtvHeaps->Create(m_device.Get(), swpDesc.BufferCount) == false)
+	m_spRTVHeap = std::make_shared<RTVHeap>();
+	if (m_spRTVHeap->Create(this, HeapType::RTV, swpDesc.BufferCount) == false)
 	{
+		assert(false && "RTVバッファ作成失敗");
 		return false;
 	}
 
-	for (int i = 0;i < m_backBuffers.size();++i)
+	for (int i = 0; i < m_backBuffers.size(); ++i)
 	{
-		hr = m_swapChain->GetBuffer(i,IID_PPV_ARGS(&m_backBuffers[i]));
+		hr = m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_backBuffers[i]));
 		if (hr != S_OK)
 		{
 			assert(false && "バッファ作成失敗");
@@ -311,13 +320,13 @@ bool Direct3D::CreateRTVBuffer()
 		}
 
 
-		m_rtvHeaps->CreateRTV(m_backBuffers[i].Get());
+		m_spRTVHeap->CreateRTV(m_backBuffers[i].Get());
 	}
 
 	return true;
 }
 
-bool Direct3D::CreateFence()
+bool GraphicsDevice::CreateFence()
 {
 	HRESULT hr = m_device->CreateFence(m_fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence));
 	if (hr != S_OK)
@@ -328,7 +337,7 @@ bool Direct3D::CreateFence()
 	return true;
 }
 
-Microsoft::WRL::ComPtr<IDXGIAdapter> Direct3D::FindAdapter()
+Microsoft::WRL::ComPtr<IDXGIAdapter> GraphicsDevice::FindAdapter()
 {
 	Microsoft::WRL::ComPtr<IDXGIAdapter> pSelectAdapter = nullptr;
 	std::vector<Microsoft::WRL::ComPtr<IDXGIAdapter>> pAdapters;

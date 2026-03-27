@@ -1,7 +1,6 @@
 ﻿#include "RootSignature.h"
-#include "../../Direct3D.h"
 
-void RootSignature::Create(Direct3D* _pDevice, const std::vector<RangeType>& _types)
+void RootSignature::Create(GraphicsDevice* _pDevice, const std::vector<RangeType>& _types)
 {
 	m_pDevice = _pDevice;
 

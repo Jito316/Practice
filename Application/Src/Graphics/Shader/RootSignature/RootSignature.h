@@ -19,12 +19,10 @@ enum class D3D12Filter
 	Linear,
 };
 
-class Direct3D;
-
 class RootSignature
 {
 public:
-	void Create(Direct3D* _pDevice,const std::vector<RangeType>& _types);
+	void Create(GraphicsDevice* _pDevice,const std::vector<RangeType>& _types);
 
 	ID3D12RootSignature* GetRootSignature() { return m_pRootSignature.Get(); }
 
@@ -34,5 +32,5 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_pRootSignature;
 
-	Direct3D* m_pDevice = nullptr;
+	GraphicsDevice* m_pDevice = nullptr;
 };

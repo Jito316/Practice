@@ -1,7 +1,6 @@
 ﻿#include "Shader.h"
-#include "../Direct3D.h"
 
-void Shader::Create(Direct3D* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes)
+void Shader::Create(GraphicsDevice* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes)
 {
 	m_pDevice = _pDevice;
 

@@ -39,7 +39,7 @@ class RootSignature;
 class Pipeline
 {
 public:
-	void SetRenderSettings(Direct3D* _pDevice, RootSignature* _pRootSignature, const std::vector<InputLayout>& _inputLayouts, CullMode _cullMode, BlendMode _blendMode, PrimitiveTopologyType _topologyType);
+	void SetRenderSettings(GraphicsDevice* _pDevice, RootSignature* _pRootSignature, const std::vector<InputLayout>& _inputLayouts, CullMode _cullMode, BlendMode _blendMode, PrimitiveTopologyType _topologyType);
 
 	void Create(const std::vector<ID3DBlob*>& _pBlobs, const std::vector<DXGI_FORMAT>& _formats, bool _isDepth, bool _isDepthMask, int _rtvCount, bool _isWireFrame);
 
@@ -57,6 +57,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pPipelineState;
 
-	Direct3D* m_pDevice = nullptr;
+	GraphicsDevice* m_pDevice = nullptr;
 	RootSignature* m_pRootSignature = nullptr;
 };

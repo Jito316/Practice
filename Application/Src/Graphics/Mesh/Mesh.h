@@ -1,5 +1,4 @@
 ﻿#pragma once
-class Direct3D;
 
 struct Vertex
 {
@@ -12,7 +11,7 @@ struct Vertex
 class Mesh
 {
 public:
-	bool Create(Direct3D* _pDevice);
+	bool Create(GraphicsDevice* _pDevice);
 
 	void DrawInstanced() const;
 
@@ -25,5 +24,5 @@ private:
 	D3D12_INDEX_BUFFER_VIEW m_ibView = {};
 	std::vector<UINT> m_indeices;
 
-	Direct3D* m_pDevice = nullptr;
+	GraphicsDevice* m_pDevice = nullptr;
 };

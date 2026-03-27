@@ -1,7 +1,6 @@
 ﻿#include "Mesh.h"
-#include "../Direct3D.h"
 
-bool Mesh::Create(Direct3D* _pDevice)
+bool Mesh::Create(GraphicsDevice* _pDevice)
 {
 	m_pDevice = _pDevice;
 	auto& device = *m_pDevice->GetDevice();

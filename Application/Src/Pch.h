@@ -55,20 +55,26 @@
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
-
+#pragma comment(lib,"d3dcompiler.lib")
 #include <d3d12.h>
 #include <dxgi1_6.h>
-
-#pragma comment(lib,"d3dcompiler.lib")
 #include <d3dcompiler.h>
 
-#include <DirectXMath.h>
+
+#pragma comment(lib, "DirectXTK.lib")
+#include <SimpleMath.h>
+
+#pragma comment(lib,"DirectXtex.lib")
+#include <DirectXTex.h>
+
 namespace Math
 {
 	typedef DirectX::XMMATRIX Matrix;
 	typedef DirectX::XMFLOAT3 Vector3;
 	typedef DirectX::XMFLOAT2 Vector2;
 };
+
+#include "Graphics/GraphicsDevice.h"
 
 /*
 //===============================================

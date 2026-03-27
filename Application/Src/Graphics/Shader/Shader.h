@@ -16,12 +16,10 @@ struct RenderingSetting
 	bool IsWireFrame = false;
 };
 
-class Direct3D;
-
 class Shader 
 {
 public:
-	void Create(Direct3D* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes);
+	void Create(GraphicsDevice* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes);
 
 	void Begin(int _w, int _h);
 	void DrawMesh(const Mesh& _mesh);
@@ -38,5 +36,5 @@ private:
 	ID3DBlob* m_pGSBlob = nullptr;
 	ID3DBlob* m_pPSBlob = nullptr;
 
-	Direct3D* m_pDevice = nullptr;
+	GraphicsDevice* m_pDevice = nullptr;
 };
