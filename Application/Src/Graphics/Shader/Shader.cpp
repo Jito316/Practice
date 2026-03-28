@@ -7,7 +7,7 @@ void Shader::Create(GraphicsDevice* _pDevice, const std::wstring& _filePath, con
 	LoadShaderFile(_filePath);
 
 	m_upRootSignature = std::make_unique<RootSignature>();
-	m_upRootSignature->Create(_pDevice, _rangeTypes);
+	m_upRootSignature->Create(_pDevice, _rangeTypes,m_cbvCount);
 
 	m_upPipeline = std::make_unique<Pipeline>();
 	m_upPipeline->SetRenderSettings(_pDevice, m_upRootSignature.get(), _renderingSetting.InputLayout, _renderingSetting.CullMode, _renderingSetting.BlendMode, _renderingSetting.PrimitiveTopologyType);

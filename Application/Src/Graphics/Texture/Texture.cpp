@@ -26,10 +26,10 @@ bool Texture::Load(GraphicsDevice* _pDevice, const std::string& _filepath)
 	D3D12_RESOURCE_DESC resourceDesc = {};
 	resourceDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
 	resourceDesc.Format = metadata.format;
-	resourceDesc.Width = (UINT64)metadata.width;
-	resourceDesc.Height = (UINT64)metadata.height;
-	resourceDesc.DepthOrArraySize = (UINT64)metadata.arraySize;
-	resourceDesc.MipLevels = (UINT64)metadata.mipLevels;
+	resourceDesc.Width = (UINT16)metadata.width;
+	resourceDesc.Height = (UINT16)metadata.height;
+	resourceDesc.DepthOrArraySize = (UINT16)metadata.arraySize;
+	resourceDesc.MipLevels = (UINT16)metadata.mipLevels;
 	resourceDesc.SampleDesc.Count = 1;
 
 	hr = _pDevice->GetDevice()->CreateCommittedResource(&heapprop, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_pBuffer));

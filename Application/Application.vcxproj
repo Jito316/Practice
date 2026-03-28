@@ -157,6 +157,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Graphics\CBufferAllocator\CBufferAllocator.h" />
+    <ClInclude Include="Src\Graphics\CBufferAllocator\CBufferData\CBufferData.h" />
     <ClInclude Include="Src\Graphics\GraphicsDevice.h" />
     <ClInclude Include="Src\Graphics\Heap\CBVSRVUAVHeap\CBVSRVUAVHeap.h" />
     <ClInclude Include="Src\Graphics\Heap\Heap.h" />
@@ -170,6 +172,7 @@
     <ClInclude Include="Src\Window\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Graphics\CBufferAllocator\CBufferAllocator.cpp" />
     <ClCompile Include="Src\Graphics\GraphicsDevice.cpp" />
     <ClCompile Include="Src\Graphics\Heap\CBVSRVUAVHeap\CBVSRVUAVHeap.cpp" />
     <ClCompile Include="Src\Graphics\Heap\RTVHeap\RTVHeap.cpp" />

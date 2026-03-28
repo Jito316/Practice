@@ -1,6 +1,6 @@
 ﻿#include "RootSignature.h"
 
-void RootSignature::Create(GraphicsDevice* _pDevice, const std::vector<RangeType>& _types)
+void RootSignature::Create(GraphicsDevice* _pDevice, const std::vector<RangeType>& _types, UINT& _cbvCount)
 {
 	m_pDevice = _pDevice;
 
@@ -10,7 +10,6 @@ void RootSignature::Create(GraphicsDevice* _pDevice, const std::vector<RangeType
 	std::vector<D3D12_ROOT_PARAMETER> rootParams(rangeCount);
 	std::vector<D3D12_DESCRIPTOR_RANGE> ranges(rangeCount);
 
-	int cbvCount = 0;
 	int samplerCount = 0;
 	int uavCount = 0;
 	bool bSampler = false;
@@ -20,13 +19,13 @@ void RootSignature::Create(GraphicsDevice* _pDevice, const std::vector<RangeType
 		switch (_types[i])
 		{
 		case RangeType::CBV:
-			CreateRange(ranges[i], RangeType::CBV, cbvCount);
+			CreateRange(ranges[i], RangeType::CBV, _cbvCount);
 			rootParams[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			rootParams[i].DescriptorTable.pDescriptorRanges = &ranges[i];
 			rootParams[i].DescriptorTable.NumDescriptorRanges = 1;
 			rootParams[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-			++cbvCount;
+			++_cbvCount;
 			break;
 		case RangeType::SRV:
 			CreateRange(ranges[i], RangeType::SRV, samplerCount);

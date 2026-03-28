@@ -6,6 +6,8 @@
 #include "Graphics/Shader/Shader.h"
 #include "Graphics/Texture/Texture.h"
 #include "Graphics/Heap/CBVSRVUAVHeap/CBVSRVUAVHeap.h"
+#include "Graphics/CBufferAllocator/CBufferAllocator.h"
+#include "Graphics/CBufferAllocator/CBufferData/CBufferData.h"
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -34,10 +36,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		renderingSetting.IsDepthMask = false;
 
 		Shader shader;
-		shader.Create(&d3d, L"BasicShader", renderingSetting, { RangeType::SRV });
+		shader.Create(&d3d, L"BasicShader", renderingSetting, { RangeType::CBV,RangeType::SRV });
 
 		Texture sampleTex;
-		sampleTex.Load(&d3d, "Assets/Texture/IMG_3724.jpg");
+		sampleTex.Load(&d3d, "Assets/Texture/IMG_3724.png");
+
+		CBufferData::Camera cbCamera;
+		cbCamera.mView = Math::Matrix::CreateTranslation(0, 0, 3);
+		cbCamera.mProj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.f), 1280.0f / 720.0f, 0.01f, 1000.0f);
+
+
 
 		while (window.IsEnd() == false)
 		{
@@ -47,9 +55,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			d3d.Prepare();
 			d3d.GetCBVSRVUAVHeap()->SetHeap();
 
+			d3d.GetCBufferAllocator()->ResetCurrentUseNumber();
+
 			shader.Begin(1280, 720);
 
-			sampleTex.Set(sampleTex.GetSRVNumber());
+			sampleTex.Set(shader.GetCBVCount() + sampleTex.GetSRVNumber());
+
+			d3d.GetCBufferAllocator()->BindAndAttachData(0, cbCamera);
 
 			shader.DrawMesh(mesh);
 

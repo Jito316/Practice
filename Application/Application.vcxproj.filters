@@ -34,6 +34,12 @@
     <ClInclude Include="Src\Graphics\Texture\Texture.h">
       <Filter>Src\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Graphics\CBufferAllocator\CBufferAllocator.h">
+      <Filter>Src\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Graphics\CBufferAllocator\CBufferData\CBufferData.h">
+      <Filter>Src\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\main.cpp">
@@ -67,6 +73,9 @@
       <Filter>Src\Window</Filter>
     </ClCompile>
     <ClCompile Include="Src\Graphics\Texture\Texture.cpp">
+      <Filter>Src\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\CBufferAllocator\CBufferAllocator.cpp">
       <Filter>Src\Graphics</Filter>
     </ClCompile>
   </ItemGroup>

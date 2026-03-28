@@ -1,8 +1,11 @@
 ﻿#pragma once
 
 class WindowsWindow;
+
 class RTVHeap;
 class CBVSRVUAVHeap;
+class CBufferAllocator;
+
 class Shader;
 
 class GraphicsDevice
@@ -18,6 +21,7 @@ public:
 	ID3D12GraphicsCommandList* GetCmdList() const { return m_cmdList.Get(); }
 
 	CBVSRVUAVHeap* GetCBVSRVUAVHeap() const{ return m_spCBVSRVUAVHeap.get(); }
+	CBufferAllocator* GetCBufferAllocator() const{ return m_spCBufferAllocator.get(); }
 
 private:
 	void SetResourceBarrier(ID3D12Resource* _pResource,D3D12_RESOURCE_STATES _stateBefore, D3D12_RESOURCE_STATES _stateAfter);
@@ -40,14 +44,15 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_cmdList;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_cmdQueue;
 
+	Microsoft::WRL::ComPtr<ID3D12Fence> m_pFence;
+	Microsoft::WRL::ComPtr<IDXGIAdapter> m_pAdapter;
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_backBuffers;
 	std::shared_ptr<RTVHeap> m_spRTVHeap;
 	std::shared_ptr<CBVSRVUAVHeap> m_spCBVSRVUAVHeap;
+	std::shared_ptr<CBufferAllocator> m_spCBufferAllocator;
 
-	Microsoft::WRL::ComPtr<ID3D12Fence> m_pFence;
 
-	Microsoft::WRL::ComPtr<IDXGIAdapter> m_pAdapter;
 
 	UINT64 m_fenceVal = 0;
 

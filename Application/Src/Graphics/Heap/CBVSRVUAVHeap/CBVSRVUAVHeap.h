@@ -10,4 +10,6 @@ public:
 
 	void SetHeap();
 
+	const Math::Vector3& GetUseCount()const { return m_useCount; }
+
 };

@@ -6,6 +6,7 @@
 #include "Window/WindowsWindow.h"
 #include "Heap/RTVHeap/RTVHeap.h"
 #include "Heap/CBVSRVUAVHeap/CBVSRVUAVHeap.h"
+#include "CBufferAllocator/CBufferAllocator.h"
 
 #ifdef _DEBUG
 static void EnableDebugLayer()
@@ -50,11 +51,14 @@ bool GraphicsDevice::Initialize(WindowsWindow* _window)
 	}
 
 	m_spCBVSRVUAVHeap = std::make_shared<CBVSRVUAVHeap>();
-	if (m_spCBVSRVUAVHeap->Create(this, HeapType::CBVSRVUAV, Math::Vector3(100, 100, 100)) == false)
+	if (m_spCBVSRVUAVHeap->Create(this, HeapType::CBVSRVUAV, Math::Vector3(150, 150, 150)) == false)
 	{
 		assert(false && "CBVSRVUAVヒープ作成失敗");
 		return false;
 	}
+
+	m_spCBufferAllocator = std::make_shared<CBufferAllocator>();
+	m_spCBufferAllocator->Create(this, m_spCBVSRVUAVHeap.get());
 
 	if (CreateFence() == false)
 	{

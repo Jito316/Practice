@@ -24,6 +24,8 @@ public:
 	void Begin(int _w, int _h);
 	void DrawMesh(const Mesh& _mesh);
 
+	UINT GetCBVCount() const { return m_cbvCount; }
+
 private:
 	void LoadShaderFile(const std::wstring& _filePath);
 
@@ -35,6 +37,8 @@ private:
 	ID3DBlob* m_pDSBlob = nullptr;
 	ID3DBlob* m_pGSBlob = nullptr;
 	ID3DBlob* m_pPSBlob = nullptr;
+
+	UINT m_cbvCount = 0;
 
 	GraphicsDevice* m_pDevice = nullptr;
 };

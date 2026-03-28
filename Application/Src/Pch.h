@@ -69,9 +69,9 @@
 
 namespace Math
 {
-	typedef DirectX::XMMATRIX Matrix;
-	typedef DirectX::XMFLOAT3 Vector3;
-	typedef DirectX::XMFLOAT2 Vector2;
+	typedef DirectX::SimpleMath::Matrix  Matrix;
+	typedef DirectX::SimpleMath::Vector3 Vector3;
+	typedef DirectX::SimpleMath::Vector2 Vector2;
 };
 
 #include "Graphics/GraphicsDevice.h"

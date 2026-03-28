@@ -15,7 +15,7 @@ public:
 	Heap() = default;
 	virtual ~Heap() = default;
 
-	bool Create(GraphicsDevice* _pDevice, HeapType _heapType,T _useCount)
+	virtual bool Create(GraphicsDevice* _pDevice, HeapType _heapType,T _useCount)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 		heapDesc.Type = static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(_heapType);
@@ -50,6 +50,8 @@ public:
 		handle.ptr += (UINT64)m_incrementSize * _num;
 		return handle;
 	}
+
+	virtual ID3D12DescriptorHeap* GetHeap() { return m_pHeap.Get(); }
 
 protected:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_pHeap;
