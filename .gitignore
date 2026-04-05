@@ -3,6 +3,8 @@
 [Rr]elease/
 packages/
 Library/
+obj/
+bin/
 .vs
 
 #共通無視拡張子
