@@ -12,7 +12,7 @@ struct Material
 	std::string				 Name;									// マテリアルの名前
 
 	std::shared_ptr<Texture> spBaseColorTex;						// 基本色のテクスチャ
-	Math::Color				 BaseColor = { 1.0f,1.0f, 1.0f, 1.0f };	// 基本色のスケーリング係数（RGBA）
+	Math::Vector4			 BaseColor = { 1.0f,1.0f, 1.0f, 1.0f };	// 基本色のスケーリング係数（RGBA）
 
 	std::shared_ptr<Texture> spMetallicRoughnessTex;				// B：金属性 G：粗さ
 	float					 Metallic = 0.0f;						// 金属性のスケーリング係数

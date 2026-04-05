@@ -10,6 +10,7 @@ SamplerState g_ss : register(s0);
 
 float4 main(VSOutput In) : SV_TARGET
 {
+    return float4(1,1,1,1);
     float4 color = g_diffuseTex.Sample(g_ss, In.UV);
     return color;
 }

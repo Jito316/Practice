@@ -91,5 +91,5 @@ void Mesh::DrawInstanced(UINT _vertexCount)const
 	ID3D12GraphicsCommandList& cmdList = *m_pDevice->GetCmdList();
 	cmdList.IASetVertexBuffers(0, 1, &m_vbView);
 	cmdList.IASetIndexBuffer(&m_ibView);
-	cmdList.DrawIndexedInstanced(6, 1, 0, 0, 0);
+	cmdList.DrawIndexedInstanced(_vertexCount, 1, 0, 0, 0);
 }

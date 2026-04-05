@@ -39,7 +39,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	else
 	{
-		Math::Matrix mWorld;
+		ModelData model;
+		model.Load("Assets/Models/Block/Block.gltf");
+
 
 		RenderingSetting renderingSetting = {};
 		renderingSetting.InputLayout = { InputLayout::POSITION, InputLayout::TEXCOORD,InputLayout::COLOR,InputLayout::NORMAL, InputLayout::TANGENT };
@@ -48,17 +50,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		renderingSetting.IsDepthMask = false;
 
 		Shader shader;
-		shader.Create(&d3d, L"BasicShader", renderingSetting, { RangeType::CBV,RangeType::CBV,RangeType::SRV,RangeType::SRV,RangeType::SRV });
+		shader.Create(&d3d, L"BasicShader", renderingSetting, { RangeType::CBV,RangeType::CBV,RangeType::SRV,RangeType::SRV,RangeType::SRV,RangeType::SRV });
 
-		ModelData model;
-		if (model.Load("Assets/Models/Block/Block.gltf") == false)
-		{
-			assert(false && "読み込み失敗");
-		}
+		Texture texture;
+		texture.Load(&d3d,"Assets/Texture/IMG_3724.png");
 
 		CBufferData::Camera cbCamera;
 		cbCamera.mView = Math::Matrix::CreateTranslation(0, 0, 3);
 		cbCamera.mProj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.f), 1280.0f / 720.0f, 0.01f, 1000.0f);
+
+		Math::Matrix mWorld = Math::Matrix::Identity;
 
 		while (window.IsEnd() == false)
 		{
@@ -67,14 +68,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			d3d.Prepare();
 			d3d.GetCBVSRVUAVHeap()->SetHeap();
-
 			d3d.GetCBufferAllocator()->ResetCurrentUseNumber();
-
 			shader.Begin(1280, 720);
+
+			texture.Set(shader.GetCBVCount() + texture.GetSRVNumber());
 
 			d3d.GetCBufferAllocator()->BindAndAttachData(0, cbCamera);
 
-			mWorld *= Math::Matrix::CreateRotationY(0.01f);
+			mWorld *= Math::Matrix::CreateRotationX(-0.01f);
+			mWorld *= Math::Matrix::CreateRotationY(-0.01f);
+			mWorld *= Math::Matrix::CreateRotationZ(-0.01f);
 			d3d.GetCBufferAllocator()->BindAndAttachData(1, mWorld);
 			shader.DrawModel(model);
 

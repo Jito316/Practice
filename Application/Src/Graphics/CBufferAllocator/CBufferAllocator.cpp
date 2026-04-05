@@ -56,7 +56,7 @@ void CBufferAllocator::BindAndAttachDataInternal(int _descIndex,const void* _pDa
 	m_pDevice->GetDevice()->CreateConstantBufferView(&cbDesc, cpuHandle);
 
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_pHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart();
-	cpuHandle.ptr += (UINT64)m_pDevice->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * m_currentUseNumber;
+	gpuHandle.ptr += (UINT64)m_pDevice->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * m_currentUseNumber;
 
 	m_pDevice->GetCmdList()->SetGraphicsRootDescriptorTable(_descIndex, gpuHandle);
 

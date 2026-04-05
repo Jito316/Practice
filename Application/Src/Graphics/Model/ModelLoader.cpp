@@ -133,8 +133,8 @@ const Material ModelLoader::ParseMaterial(const aiMaterial* _pMaterial, const st
 
 	{
 		aiString path;
-		if (_pMaterial->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &path) == AI_SUCCESS||
-		_pMaterial->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &path) == AI_SUCCESS) 
+		if (_pMaterial->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &path) == AI_SUCCESS ||
+			_pMaterial->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &path) == AI_SUCCESS)
 		{
 			std::string filepath = std::string(path.C_Str());
 
@@ -149,7 +149,7 @@ const Material ModelLoader::ParseMaterial(const aiMaterial* _pMaterial, const st
 
 	{
 		float metallic = 0.0f;
-		if (_pMaterial->Get(AI_MATKEY_METALLIC_FACTOR,metallic) == AI_SUCCESS)
+		if (_pMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS)
 		{
 			material.Metallic = metallic;
 		}
@@ -202,6 +202,6 @@ const Material ModelLoader::ParseMaterial(const aiMaterial* _pMaterial, const st
 			}
 		}
 	}
-	
+
 	return material;
 }
