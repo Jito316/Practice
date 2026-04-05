@@ -51,7 +51,7 @@ bool GraphicsDevice::Initialize(WindowsWindow* _window)
 	}
 
 	m_spCBVSRVUAVHeap = std::make_shared<CBVSRVUAVHeap>();
-	if (m_spCBVSRVUAVHeap->Create(this, HeapType::CBVSRVUAV, Math::Vector3(150, 150, 150)) == false)
+	if (m_spCBVSRVUAVHeap->Create(this, HeapType::CBVSRVUAV, Math::Vector3(200, 200, 200)) == false)
 	{
 		assert(false && "CBVSRVUAVヒープ作成失敗");
 		return false;

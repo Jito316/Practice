@@ -1,16 +1,20 @@
 ﻿#include "Mesh.h"
 
-bool Mesh::Create(GraphicsDevice* _pDevice)
+bool Mesh::Create(GraphicsDevice* _pDevice, const std::vector<MeshVertex>& _vertices, const std::vector<MeshFace>& _face, const Material& _material)
 {
 	m_pDevice = _pDevice;
+	m_material = _material;
+
+	if (_vertices.empty())
+	{
+		assert(false && "頂点が１つもありません");
+		return false;
+	}
+
 	auto& device = *m_pDevice->GetDevice();
 	auto& cmdList = *m_pDevice->GetCmdList();
 
-	//頂点情報
-	m_vertices.emplace_back(Math::Vector3{ -0.5f,-0.5f, 0.0f }, Math::Vector2{ 0.0f,1.0f });
-	m_vertices.emplace_back(Math::Vector3{ -0.5f,0.5f, 0.0f }, Math::Vector2{ 0.0f,0.0f });
-	m_vertices.emplace_back(Math::Vector3{ 0.5f,-0.5f, 0.0f }, Math::Vector2{ 1.0f,1.0f });
-	m_vertices.emplace_back(Math::Vector3{ 0.5f,0.5f, 0.0f }, Math::Vector2{ 1.0f,0.0f });
+	m_instanceCount = static_cast<UINT>(_face.size() * 3);
 
 	//頂点バッファの作成
 	D3D12_HEAP_PROPERTIES heapprop = {};
@@ -20,7 +24,7 @@ bool Mesh::Create(GraphicsDevice* _pDevice)
 
 	D3D12_RESOURCE_DESC resourceDesc = {};
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resourceDesc.Width = sizeof(Vertex) * m_vertices.size();
+	resourceDesc.Width = sizeof(MeshVertex) * _vertices.size();
 	resourceDesc.Height = 1;
 	resourceDesc.DepthOrArraySize = 1;
 	resourceDesc.MipLevels = 1;
@@ -42,27 +46,18 @@ bool Mesh::Create(GraphicsDevice* _pDevice)
 	//頂点バッファビューの設定
 	m_vbView.BufferLocation = m_pVBuffer->GetGPUVirtualAddress();
 	m_vbView.SizeInBytes = (UINT)resourceDesc.Width;
-	m_vbView.StrideInBytes = sizeof(Vertex);
+	m_vbView.StrideInBytes = sizeof(MeshVertex);
 	cmdList.IASetVertexBuffers(0, 1, &m_vbView);
 
-	Vertex* vbMap = nullptr;
+	MeshVertex* vbMap = nullptr;
 	{
 		hr = m_pVBuffer->Map(0, nullptr, (void**)&vbMap);
-		std::copy(std::begin(m_vertices), std::end(m_vertices), vbMap);
+		std::copy(std::begin(_vertices), std::end(_vertices), vbMap);
 		m_pVBuffer->Unmap(0, nullptr);
 	}
 
-
-	//インデックス情報
-	m_indeices.emplace_back(0);
-	m_indeices.emplace_back(1);
-	m_indeices.emplace_back(2);
-	m_indeices.emplace_back(2);
-	m_indeices.emplace_back(1);
-	m_indeices.emplace_back(3);
-
 	//インデックスバッファの作成
-	resourceDesc.Width = sizeof(UINT) * m_indeices.size();
+	resourceDesc.Width = sizeof(MeshFace) * _face.size();
 
 	hr = device.CreateCommittedResource(
 		&heapprop, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ
@@ -80,10 +75,10 @@ bool Mesh::Create(GraphicsDevice* _pDevice)
 	m_ibView.Format = DXGI_FORMAT_R32_UINT;
 	cmdList.IASetIndexBuffer(&m_ibView);
 
-	UINT* ibMap = nullptr;
+	MeshFace* ibMap = nullptr;
 	{
 		hr = m_pIBuffer->Map(0, nullptr, (void**)&ibMap);
-		std::copy(std::begin(m_indeices), std::end(m_indeices), ibMap);
+		std::copy(std::begin(_face), std::end(_face), ibMap);
 		m_pIBuffer->Unmap(0, nullptr);
 	}
 
@@ -91,7 +86,7 @@ bool Mesh::Create(GraphicsDevice* _pDevice)
 	return true;
 }
 
-void Mesh::DrawInstanced()const
+void Mesh::DrawInstanced(UINT _vertexCount)const
 {
 	ID3D12GraphicsCommandList& cmdList = *m_pDevice->GetCmdList();
 	cmdList.IASetVertexBuffers(0, 1, &m_vbView);

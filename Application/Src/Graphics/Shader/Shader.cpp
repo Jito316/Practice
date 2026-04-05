@@ -1,4 +1,5 @@
 ﻿#include "Shader.h"
+#include "../Texture/Texture.h"
 
 void Shader::Create(GraphicsDevice* _pDevice, const std::wstring& _filePath, const RenderingSetting& _renderingSetting, const std::vector<RangeType>& _rangeTypes)
 {
@@ -7,7 +8,7 @@ void Shader::Create(GraphicsDevice* _pDevice, const std::wstring& _filePath, con
 	LoadShaderFile(_filePath);
 
 	m_upRootSignature = std::make_unique<RootSignature>();
-	m_upRootSignature->Create(_pDevice, _rangeTypes,m_cbvCount);
+	m_upRootSignature->Create(_pDevice, _rangeTypes, m_cbvCount);
 
 	m_upPipeline = std::make_unique<Pipeline>();
 	m_upPipeline->SetRenderSettings(_pDevice, m_upRootSignature.get(), _renderingSetting.InputLayout, _renderingSetting.CullMode, _renderingSetting.BlendMode, _renderingSetting.PrimitiveTopologyType);
@@ -52,7 +53,16 @@ void Shader::Begin(int _w, int _h)
 
 void Shader::DrawMesh(const Mesh& _mesh)
 {
-	_mesh.DrawInstanced();
+	SetMaterial(_mesh.GetMaterial());
+	_mesh.DrawInstanced(_mesh.GetInstanceCount());
+}
+
+void Shader::DrawModel(const ModelData& _model)
+{
+	for (auto& node : _model.GetNodes())
+	{
+		DrawMesh(*node.spMesh);
+	}
 }
 
 // TODO：シェーダーの使い方法検討中
@@ -104,4 +114,13 @@ void Shader::LoadShaderFile(const std::wstring& _filePath)
 			assert(false && "ピクセルシェーダーの作成に失敗しました");
 		}
 	}
+}
+
+void Shader::SetMaterial(const Material& _material)const
+{
+	_material.spBaseColorTex->Set(m_cbvCount);
+	return;
+	_material.spNormalTex->Set(m_cbvCount + 1);
+	_material.spMetallicRoughnessTex->Set(m_cbvCount + 2);
+	_material.spEmissiveTex->Set(m_cbvCount + 3);
 }

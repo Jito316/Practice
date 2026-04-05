@@ -70,16 +70,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Library/assimp/include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>Library/assimp/build/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DelayLoadDLLs>assimp-vc143-mtd.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,12 +96,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Library/assimp/include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <DelayLoadDLLs>assimp-vc143-mt.dll</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>Library/assimp/build/lib/$(Configuration);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -106,7 +115,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>Src;Src\1_Framework;Src\2_CoreSystem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Library/assimp/include;Src;Src\1_Framework;Src\2_CoreSystem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -115,6 +124,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>Library/assimp/build/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DelayLoadDLLs>assimp-vc143-mtd.dll</DelayLoadDLLs>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -135,7 +146,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>Src;Src\1_Framework;Src\2_CoreSystem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Library/assimp/include;Src;Src\1_Framework;Src\2_CoreSystem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -146,6 +157,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <DelayLoadDLLs>assimp-vc143-mt.dll</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>Library/assimp/build/lib/$(Configuration);</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -164,6 +177,9 @@
     <ClInclude Include="Src\Graphics\Heap\Heap.h" />
     <ClInclude Include="Src\Graphics\Heap\RTVHeap\RTVHeap.h" />
     <ClInclude Include="Src\Graphics\Mesh\Mesh.h" />
+    <ClInclude Include="Src\Graphics\Mesh\MeshData\MeshData.h" />
+    <ClInclude Include="Src\Graphics\Model\Model.h" />
+    <ClInclude Include="Src\Graphics\Model\ModelLoader.h" />
     <ClInclude Include="Src\Graphics\Shader\Pipeline\Pipeline.h" />
     <ClInclude Include="Src\Graphics\Shader\RootSignature\RootSignature.h" />
     <ClInclude Include="Src\Graphics\Shader\Shader.h" />
@@ -177,6 +193,8 @@
     <ClCompile Include="Src\Graphics\Heap\CBVSRVUAVHeap\CBVSRVUAVHeap.cpp" />
     <ClCompile Include="Src\Graphics\Heap\RTVHeap\RTVHeap.cpp" />
     <ClCompile Include="Src\Graphics\Mesh\Mesh.cpp" />
+    <ClCompile Include="Src\Graphics\Model\Model.cpp" />
+    <ClCompile Include="Src\Graphics\Model\ModelLoader.cpp" />
     <ClCompile Include="Src\Graphics\Shader\Pipeline\Pipeline.cpp" />
     <ClCompile Include="Src\Graphics\Shader\RootSignature\RootSignature.cpp" />
     <ClCompile Include="Src\Graphics\Shader\Shader.cpp" />
@@ -211,7 +229,6 @@
     <Import Project="..\packages\Microsoft.XAudio2.Redist.1.2.11\build\native\Microsoft.XAudio2.Redist.targets" Condition="Exists('..\packages\Microsoft.XAudio2.Redist.1.2.11\build\native\Microsoft.XAudio2.Redist.targets')" />
     <Import Project="..\packages\directxtk_desktop_2019.2024.10.29.1\build\native\directxtk_desktop_2019.targets" Condition="Exists('..\packages\directxtk_desktop_2019.2024.10.29.1\build\native\directxtk_desktop_2019.targets')" />
     <Import Project="..\packages\directxtex_desktop_2019.2024.10.29.1\build\native\directxtex_desktop_2019.targets" Condition="Exists('..\packages\directxtex_desktop_2019.2024.10.29.1\build\native\directxtex_desktop_2019.targets')" />
-    <Import Project="..\packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets" Condition="Exists('..\packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -220,6 +237,5 @@
     <Error Condition="!Exists('..\packages\Microsoft.XAudio2.Redist.1.2.11\build\native\Microsoft.XAudio2.Redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.XAudio2.Redist.1.2.11\build\native\Microsoft.XAudio2.Redist.targets'))" />
     <Error Condition="!Exists('..\packages\directxtk_desktop_2019.2024.10.29.1\build\native\directxtk_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk_desktop_2019.2024.10.29.1\build\native\directxtk_desktop_2019.targets'))" />
     <Error Condition="!Exists('..\packages\directxtex_desktop_2019.2024.10.29.1\build\native\directxtex_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_desktop_2019.2024.10.29.1\build\native\directxtex_desktop_2019.targets'))" />
-    <Error Condition="!Exists('..\packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets'))" />
   </Target>
 </Project>

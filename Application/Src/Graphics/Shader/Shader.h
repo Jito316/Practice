@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "../Mesh/Mesh.h"
+#include "../Model/Model.h"
 #include "Pipeline/Pipeline.h"
 #include "RootSignature/RootSignature.h"
 
@@ -23,11 +24,13 @@ public:
 
 	void Begin(int _w, int _h);
 	void DrawMesh(const Mesh& _mesh);
+	void DrawModel(const ModelData& _model);
 
 	UINT GetCBVCount() const { return m_cbvCount; }
 
 private:
 	void LoadShaderFile(const std::wstring& _filePath);
+	void SetMaterial(const Material& _material)const;
 
 	std::unique_ptr<Pipeline> m_upPipeline = nullptr;
 	std::unique_ptr<RootSignature> m_upRootSignature = nullptr;

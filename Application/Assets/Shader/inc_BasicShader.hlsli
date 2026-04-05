@@ -1,11 +1,19 @@
 struct VSOutput
 {
-    float4 pos : SV_Position;
-    float2 uv  : TEXCOORD;
+    float4 Pos : SV_Position;
+    float2 UV  : TEXCOORD;
+    float3 Normal  : NORMAL;
+    float3 Tangent  : TANGENT;
+    float4 Color  : COLOR;
 };
 
 cbuffer cbProj : register(b0)
 {
-    row_major matrix c_mView;
-    row_major matrix c_mProj;
+    row_major matrix g_mView;
+    row_major matrix g_mProj;
+}
+
+cbuffer cbWorld : register(b1)
+{
+    row_major matrix g_mWorld;
 }

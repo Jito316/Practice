@@ -8,12 +8,26 @@
 #include "Graphics/Heap/CBVSRVUAVHeap/CBVSRVUAVHeap.h"
 #include "Graphics/CBufferAllocator/CBufferAllocator.h"
 #include "Graphics/CBufferAllocator/CBufferData/CBufferData.h"
+#include "Graphics/Model/Model.h"
+
+inline static void SetDirectoryAndLoadDll()
+{
+#ifdef _DEBUG
+	SetDllDirectoryA("Library/assimp/build/lib/Debug");
+	LoadLibraryExA("assimp-vc143-mtd.dll", NULL, NULL);
+#else
+	SetDllDirectoryA("Library/assimp/build/lib/Release");
+	LoadLibraryExA("assimp-vc143-mt.dll", NULL, NULL);
+#endif // _DEBUG
+}
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	(void)CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+	SetDirectoryAndLoadDll();
 
 	WindowsWindow window;
 	auto& d3d = GraphicsDevice::Instance();
@@ -25,27 +39,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	else
 	{
-
-		Mesh mesh;
-		mesh.Create(&d3d);
+		Math::Matrix mWorld;
 
 		RenderingSetting renderingSetting = {};
-		renderingSetting.InputLayout = { InputLayout::POSITION,InputLayout::TEXCOORD };
+		renderingSetting.InputLayout = { InputLayout::POSITION, InputLayout::TEXCOORD,InputLayout::COLOR,InputLayout::NORMAL, InputLayout::TANGENT };
 		renderingSetting.Formats = { DXGI_FORMAT_R8G8B8A8_UNORM };
 		renderingSetting.IsDepth = false;
 		renderingSetting.IsDepthMask = false;
 
 		Shader shader;
-		shader.Create(&d3d, L"BasicShader", renderingSetting, { RangeType::CBV,RangeType::SRV });
+		shader.Create(&d3d, L"BasicShader", renderingSetting, { RangeType::CBV,RangeType::CBV,RangeType::SRV,RangeType::SRV,RangeType::SRV });
 
-		Texture sampleTex;
-		sampleTex.Load(&d3d, "Assets/Texture/IMG_3724.png");
+		ModelData model;
+		if (model.Load("Assets/Models/Block/Block.gltf") == false)
+		{
+			assert(false && "読み込み失敗");
+		}
 
 		CBufferData::Camera cbCamera;
 		cbCamera.mView = Math::Matrix::CreateTranslation(0, 0, 3);
 		cbCamera.mProj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.f), 1280.0f / 720.0f, 0.01f, 1000.0f);
-
-
 
 		while (window.IsEnd() == false)
 		{
@@ -59,11 +72,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			shader.Begin(1280, 720);
 
-			sampleTex.Set(shader.GetCBVCount() + sampleTex.GetSRVNumber());
-
 			d3d.GetCBufferAllocator()->BindAndAttachData(0, cbCamera);
 
-			shader.DrawMesh(mesh);
+			mWorld *= Math::Matrix::CreateRotationY(0.01f);
+			d3d.GetCBufferAllocator()->BindAndAttachData(1, mWorld);
+			shader.DrawModel(model);
 
 			d3d.ScreenFlip();
 		}
