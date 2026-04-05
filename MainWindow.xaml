@@ -97,8 +97,9 @@
                                 <TreeView ItemsSource="{Binding Items}" Margin="15,5,0,0" BorderThickness="0" Background="Transparent">
                                     <TreeView.Resources>
                                         <HierarchicalDataTemplate DataType="{x:Type local:Item}" ItemsSource="{Binding Items}">
-                                            <local:ItemLeaf Item="{Binding}"
-                                                            TextBoxStyle="{StaticResource ModernTextBox }"/>
+                                            <Border ContextMenu="{StaticResource ItemMenu}">
+                                                <local:ItemLeaf Item="{Binding}" TextBoxStyle="{StaticResource ModernTextBox }"/>
+                                            </Border>
                                         </HierarchicalDataTemplate>
                                     </TreeView.Resources>
                                 </TreeView>
